@@ -125,14 +125,8 @@ The comparison window is the tracking volume (r ≤ 80 cm, |z| ≤ 100 cm).
 | Peak Bz             | 1.3975 T | 1.3848 T |
 
 Both maps agree with each other and with the **28.5 mm design coil offset**
-(`shiftby2p85cm`). The centre must be found by symmetry or the off-axis Br zero
-crossing, **not** by `argmax` of on-axis Bz: the field is flat to < 0.1 mT over
-±40 mm of the peak, the 2 cm grid has no node at 28.5 mm (nodes at 0, 20, 40 mm),
-and on OPERA the +20 and +40 mm nodes are equal to 1×10⁻⁶ T — so `argmax`
-spuriously reports +40 mm. `comparison/findCenterOpera.C` (the same estimators as
-`analysis/findCenter.C`) gives the OPERA centre as +31.0 mm (symmetry), +30.7 mm
-(parabola vertex), +32.2 mm (Br zero crossing) — i.e. ≈ 28.5 mm. The measured map
-gives +27.0 / +27.0 / +25.8 mm by the same three estimators.
+(`shiftby2p85cm`); see [Magnetic centre](#magnetic-centre) below for the
+per-estimator values.
 
 - **On-axis ΔBz(z=0) = −12.7 mT** (OPERA − measured): the measured central field
   is ~0.9 % higher than OPERA, a nearly uniform scale offset.
@@ -144,6 +138,31 @@ gives +27.0 / +27.0 / +25.8 mm by the same three estimators.
 - **Maxwell residuals:** measured |∇·B| RMS = 0.003 mT/cm (enforced by
   construction) vs OPERA 45.9 mT/cm — the latter is the known artifact of storing
   Bx,By,Bz as three independent trilinear grids, not a defect of either map.
+
+### Magnetic centre
+
+On-axis Bz is flat to < 0.1 mT over several cm around the peak, so a plain
+`argmax` on the field grid cannot localise the centre (on the 2 cm OPERA grid the
++20 and +40 mm nodes are equal to 1×10⁻⁶ T, so argmax reports +40 mm). The centre
+must be found from the shape of the curve. `analysis/findCenter.C` (measured map)
+and `comparison/findCenterOpera.C` (OPERA) report the same three robust estimators
+plus the naive argmax for reference:
+
+| Estimator | Measured (2022-12-02) | OPERA |
+|-----------|-----------------------|-------|
+| Bz argmax (grid-limited) | +20 mm ⚠️ | +40 mm ⚠️ |
+| **Bz symmetry**          | **+27.0 mm** | **+31.0 mm** |
+| **Parabola vertex**      | **+27.0 mm** | **+30.7 mm** |
+| **Br zero crossing** (r = 100 mm) | **+25.8 mm** | **+32.2 mm** |
+
+The three robust estimators agree within a few mm for each map, and both maps land
+on the **28.5 mm design coil offset** — confirming the apparent measured-vs-OPERA
+centre difference seen with `argmax` (+20 vs +40 mm) was an artifact, not physics.
+
+```bash
+root -l -b -q 'analysis/findCenter.C+("data")'
+root -l -b -q 'comparison/findCenterOpera.C+("data/sphenix3dmapxyz.root")'
+```
 
 ### Solenoid tilt: measured vs OPERA
 
