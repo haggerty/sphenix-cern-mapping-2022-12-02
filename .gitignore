@@ -1,0 +1,11 @@
+# Large data files (field-map CSVs + OPERA ROOT) — see README for sources
+data/
+output/
+
+# ROOT / ACLiC build artifacts
+*.so
+*.d
+*.pcm
+*_ACLiC_*
+.roothistory
+*.root
