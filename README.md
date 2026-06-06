@@ -211,6 +211,12 @@ It is a drop-in replacement for the OPERA map: pointing `PHField3DCartesian` at
 this file (with the default `magfield_rescale = 1.0`) delivers the measured field
 to the tracking framework.
 
+A prebuilt copy (111³, Bz(0,0,0) = 1.397 T) is on SDCC:
+
+```
+/sphenix/data/data02/sphenix/MagnetMapping/cern_2022-12-02/sphenix_measured_fieldmap_cartesian.root
+```
+
 ## Plots
 
 ### Measured field overview
