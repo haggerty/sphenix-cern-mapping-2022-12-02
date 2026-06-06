@@ -107,6 +107,38 @@ void checkAlignment(const char* datadir = "data", const char* outdir = "plots")
         double theta = 1e3*std::sqrt(gBx*gBx+gBy*gBy)/std::abs(gBz);
         double phi_t = std::atan2(gBy,gBx)*180.0/M_PI;
         printf("  |theta| = %.4f mrad    tilt direction phi = %.1f deg\n", theta, phi_t);
+
+        // Uncertainty: the all-points standard error treats ~2e5 correlated
+        // measurements as independent and is unrealistically small.  Instead
+        // take each strong-field z-slice (|Bz| > 1 T) as one independent
+        // estimate of theta and use the standard error of their mean.
+        int nS=0; double mtx=0, mty=0;
+        std::vector<double> txS, tyS;
+        for (int iz=0; iz<NZ; ++iz) {
+            if (npts[iz]==0) continue;
+            double bx=sumBx[iz]/npts[iz], by=sumBy[iz]/npts[iz], bz=sumBz[iz]/npts[iz];
+            if (std::abs(bz) < 1.0) continue;
+            double tx=1e3*std::atan2(bx,bz), ty=1e3*std::atan2(by,bz);
+            txS.push_back(tx); tyS.push_back(ty); mtx+=tx; mty+=ty; ++nS;
+        }
+        if (nS>1) {
+            mtx/=nS; mty/=nS;
+            double vx=0, vy=0;
+            for (int i=0;i<nS;++i){ vx+=(txS[i]-mtx)*(txS[i]-mtx);
+                                    vy+=(tyS[i]-mty)*(tyS[i]-mty); }
+            vx/=(nS-1); vy/=(nS-1);
+            double semx=std::sqrt(vx/nS), semy=std::sqrt(vy/nS);
+            double th=std::sqrt(mtx*mtx+mty*mty);
+            double sth=(th>0)?std::sqrt(mtx*mtx*semx*semx+mty*mty*semy*semy)/th:0;
+            double phi=std::atan2(mty,mtx)*180.0/M_PI;
+            double r2=mtx*mtx+mty*mty;
+            double sphi=(r2>0)?std::sqrt(mtx*mtx*semy*semy+mty*mty*semx*semx)/r2*180.0/M_PI:0;
+            printf("  z-slice dispersion (|Bz|>1 T, %d slices):\n", nS);
+            printf("    theta_x = %+.3f +/- %.3f mrad    theta_y = %+.3f +/- %.3f mrad\n",
+                   mtx, semx, mty, semy);
+            printf("    |theta| = %.3f +/- %.3f mrad    phi = %.1f +/- %.1f deg\n",
+                   th, sth, phi, sphi);
+        }
     }
 
     gStyle->SetOptStat(0);

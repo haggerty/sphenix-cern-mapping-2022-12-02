@@ -69,7 +69,8 @@ The OPERA map is a `TNtuple` named `fieldmap` with branches `x,y,z` (cm) and
 ├── analysis/
 │   ├── checkFieldMap.C       # Bz(r,z), Br(r,z), ∇·B(r,z), Bz on axis; Maxwell check
 │   ├── findCenter.C          # magnetic centre (Bz peak / Br sign change)
-│   └── checkAlignment.C      # solenoid-axis tilt vs sPHENIX z
+│   ├── checkAlignment.C      # solenoid-axis tilt vs sPHENIX z (global φ-averaged m=0)
+│   └── estimateTilt.C        # two independent tilt estimators (near-axis + axis-line fit)
 ├── comparison/
 │   ├── OperaMap.h            # shared OPERA loader/interpolator (grid read from ntuple)
 │   ├── compareNewVsOpera.C   # quick overlays measured vs OPERA
@@ -92,6 +93,7 @@ takes a data directory and/or output directory argument.
 root -l -b -q 'analysis/checkFieldMap.C+("data","plots")'
 root -l -b -q 'analysis/findCenter.C+("data")'
 root -l -b -q 'analysis/checkAlignment.C+("data","plots")'
+root -l -b -q 'analysis/estimateTilt.C+("data","plots")'
 
 # OPERA comparison
 root -l -b -q 'comparison/compareNewVsOpera.C+("data","data/sphenix3dmapxyz.root","plots")'
@@ -117,7 +119,7 @@ and Br derived from ∇·B = 0.
 | Peak on-axis Bz              | 1.3975 T |
 | Magnetic centre (Br zero crossing) | **z ≈ +26 mm** |
 | ∇·B residual (RMS / \|max\|) | 2.7 × 10⁻⁶ / 2.0 × 10⁻⁵ T/mm |
-| Solenoid tilt \|θ\|          | 4.13 mrad (θx = −4.12, θy = +0.29 mrad; azimuth ≈ 176°) |
+| Solenoid tilt \|θ\|          | ≈ 4.0–4.7 mrad toward −x (azimuth ≈ 176°); see [tilt cross-checks](#cross-checks-three-independent-tilt-estimators) |
 
 ### Comparison with OPERA
 
@@ -182,7 +184,7 @@ Cartesian grid) gives the OPERA tilt.
 
 | Map | \|tilt\| θ | direction | net ⟨B⊥⟩ |
 |-----|-----------|-----------|----------|
-| **Measured (2022-12-02)** | **4.13 mrad** (θx = −4.12, θy = +0.29) | azimuth ≈ 176° (toward −x) | ⟨Bx⟩ ≈ −5.8 mT |
+| **Measured (2022-12-02)** | **4.13 mrad** (θx = −4.12, θy = +0.29); 4.0–4.7 with errors below | azimuth ≈ 176° (toward −x) | ⟨Bx⟩ ≈ −5.8 mT |
 | **OPERA** (official `sphenix3dmapxyz.root`) | **≈ 0.02–0.05 mrad** | (chimney only) | ⟨Bx⟩,⟨By⟩ < 0.07 mT |
 
 **The measured solenoid carries a real ~4 mrad axis tilt; OPERA does not.** OPERA
@@ -208,6 +210,70 @@ tilt/offset rather than a winding asymmetry.
 > with an extra `hz` branch, not the official map) or to the m=1 phase of the
 > *difference* rather than a tilt of OPERA itself.
 
+#### Cross-checks: three independent tilt estimators
+
+The φ-averaged method above (`checkAlignment.C`) volume-weights toward large
+radius and gives a single global number. `analysis/estimateTilt.C` adds two
+further estimators that use **physically distinct signatures** of the same rigid
+tilt, so they fail in different ways — if all three agree, the tilt is real and
+not an artefact of one method. All use only *measured* points (no r = 0
+extrapolation through the field-map class).
+
+**Method 1 — near-axis m=0 transverse field.** The φ-averaged transverse field
+cancels the axisymmetric radial term and leaves ⟨B⊥⟩ ≈ θ·Bz at every radius, so
+θ(r) should be flat for a rigid tilt. Per single ring it is **not** flat — it
+scatters from 1.7 to 12 mrad because the ~5 mT transverse signal is comparable to
+the ring-to-ring measurement noise (the innermost r = 50 mm ring alone gives a
+spurious 6.6 mrad). Averaging the inner rings (r ≤ 300 mm, |z| < 150 mm) gives
+**4.65 ± 0.46 mrad toward φ ≈ −171°**, where the error is the standard error of
+the mean across the 11 independent rings — i.e. the ring-to-ring scatter is the
+dominant uncertainty. This is the direct, least model-dependent estimate, and it
+confirms that a *single* small volume at the centre is too noisy to trust.
+
+**Method 2 — magnetic-axis line + tilt fit.** This separates a tilt from a pure
+translation of the axis, which the φ-average alone cannot. Near the axis the
+transverse field is the sum of a uniform tilt term and the solenoid focusing
+field that points back toward the magnetic axis:
+
+```
+Bx(x,y,z) ≈ θx·B(z)  −  ½ B′(z)·( x − x_axis(z) ),   x_axis(z) = x0 + θx·z
+```
+
+with B′ = dBz/dz (and analogously for y). A per-z linear fit `Bx = px(z) + g(z)·x`
+across the bore measures the focusing gradient `g(z) = −½B′(z)` and the intercept
+`px(z)` at each z slab — driven by the fringe, where g is large, using real points
+across the measured bore rather than an extrapolation to r = 0. A global
+least-squares of the intercepts,
+
+```
+px(z) = θx·( B(z) − g(z)·z )  −  x0·g(z),
+```
+
+then solves for the tilt slope θx and the axis offset x0 simultaneously (likewise
+θy, y0). Errors come from the least-squares covariance (residual variance × the
+parameter covariance matrix). The fit gives **|θ| = 4.40 ± 0.08 mrad toward
+φ ≈ −178°** (θx = −4.40 ± 0.08, θy = −0.16 ± 0.03 mrad) **plus a small transverse
+axis offset (x0, y0) = (+2.6 ± 0.5, +1.2 ± 0.2) mm** at z = 0, i.e. the tilt and
+the residual translation are disentangled.
+
+Each estimator carries a natural uncertainty:
+
+| Estimator | \|θ\| [mrad] | direction φ | error source |
+|-----------|--------------|-------------|--------------|
+| `checkAlignment.C` — global φ-averaged m=0 | 3.99 ± 0.09 (4.13 point-weighted) | 176.2 ± 1.6° | spread of strong-field z-slices (\|Bz\|>1 T) |
+| `estimateTilt.C` M1 — near-axis, mean of 11 rings (r ≤ 300 mm) | 4.65 ± 0.46 | −171 ± 6° | ring-to-ring standard error |
+| `estimateTilt.C` M2 — axis-line fit | 4.40 ± 0.08 | −178.0 ± 0.3° | least-squares fit covariance |
+
+All three land at **4.0–4.7 mrad in the −x direction** (θx ≈ −4.4 mrad, θy ≈ 0).
+Note the *statistical* errors (0.1–0.5 mrad) are smaller than the **method-to-method
+spread** (~0.4–0.7 mrad, e.g. global 4.0 vs fit 4.4): the realistic uncertainty on
+the magnitude is set by that systematic spread, not by counting statistics. Within
+this map the tilt is robust and self-consistent across independent signatures. The
+*absolute* value should still be cross-checked against the survey before being
+quoted as a hardware number — it is also not perfectly stable between map versions,
+which is why the magnitude (not the existence) of the tilt warrants caution.
+See `plots/tilt_estimates.{pdf,png}`.
+
 ### Drop-in replacement for reconstruction
 
 `export/makeMeasuredCartesianMap.C` writes
@@ -231,6 +297,9 @@ A prebuilt copy (111³, Bz(0,0,0) = 1.397 T) is on SDCC:
 
 ### Measured vs OPERA (overlays)
 ![Measured vs OPERA](plots/compare_newVsOpera.png)
+
+### Solenoid tilt estimators
+![Tilt estimates](plots/tilt_estimates.png)
 
 The `comparison/compareFieldMaps.C` macro additionally writes the numbered series
 `plots/01_…`–`plots/11_…` (on-axis Bz, 2-D maps, ΔBz, Br comparison, m=1
