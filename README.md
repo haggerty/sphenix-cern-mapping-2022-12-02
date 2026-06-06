@@ -21,7 +21,8 @@ relevant for the sPHENIX solenoid field:
 > that contained a **~265 mm error in the surveyor→sPHENIX z position**. That
 > placed the solenoid magnetic centre at z ≈ −240 mm and produced a spurious
 > ~28 cm offset relative to OPERA. With the corrected 2022-12-02 point cloud the
-> magnetic centre lands at **z ≈ +26 mm**, in agreement with OPERA (+40 mm). The
+> magnetic centre lands at **z ≈ +26 mm**, in agreement with OPERA (≈ +28.5 mm,
+> the design coil offset). The
 > old repositories should be considered archival.
 
 ## Data files (not stored in git)
@@ -104,7 +105,7 @@ and Br derived from ∇·B = 0.
 |----------|-------|
 | On-axis field, Bz(0,0,0)     | **1.397 T** |
 | Peak on-axis Bz              | 1.3975 T |
-| Magnetic centre (Bz peak / Br zero) | **z ≈ +26 mm** |
+| Magnetic centre (Br zero crossing) | **z ≈ +26 mm** |
 | ∇·B residual (RMS / \|max\|) | 2.7 × 10⁻⁶ / 2.0 × 10⁻⁵ T/mm |
 | Solenoid tilt \|θ\|          | 4.13 mrad (θx = −4.12, θy = +0.29 mrad; azimuth ≈ 176°) |
 
@@ -116,9 +117,17 @@ The comparison window is the tracking volume (r ≤ 80 cm, |z| ≤ 100 cm).
 
 | Quantity | Measured (2022-12-02) | OPERA |
 |----------|-----------------------|-------|
-| Magnetic centre (z) | +26 mm | +40 mm |
+| Magnetic centre (z) | ~+26 mm | ~+28.5 mm |
 | Bz(0,0,0)           | 1.397 T | 1.385 T |
 | Peak Bz             | 1.3975 T | 1.3848 T |
+
+Both maps agree with each other and with the **28.5 mm design coil offset**
+(`shiftby2p85cm`). The centre must be found by symmetry or the off-axis Br zero
+crossing, **not** by `argmax` of on-axis Bz: the field is flat to < 0.1 mT over
+±40 mm of the peak, the 2 cm grid has no node at 28.5 mm (nodes at 0, 20, 40 mm),
+and on OPERA the +20 and +40 mm nodes are equal to 1×10⁻⁶ T — so `argmax`
+spuriously reports +40 mm. A symmetry fit of the OPERA on-axis curve gives
++31 mm (quartic-vertex fit +21 mm), i.e. ≈ 28.5 mm.
 
 - **On-axis ΔBz(z=0) = −12.7 mT** (OPERA − measured): the measured central field
   is ~0.9 % higher than OPERA, a nearly uniform scale offset.
