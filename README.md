@@ -36,9 +36,16 @@ them under `data/` (git-ignored) before running, e.g. as symlinks:
 | `data/pointCloudRoughFullField.csv` | 10 cm step, 10° azimuthal, ~42 k points |
 | `data/sphenix3dmapxyz.root`         | official OPERA map (see `sphenixoperamaps`) |
 
-The measured CSVs come from the 2022-12-02 mapping tarball
-(`cernmapping_2022-12-02/download.tar`); on SDCC they are also at
-`/sphenix/data/data02/sphenix/MagnetMapping/cern_2022-12-02/`.
+The measured CSVs come from the 2022-12-02 mapping tarball `download.tar`; on
+SDCC the tarball and the unpacked CSVs are at
+`/sphenix/data/data02/sphenix/MagnetMapping/cern_2022-12-02/`. The tarball
+contains three maps (the analysis uses the two full-field ones):
+
+| File in `download.tar` | Size | Description |
+|------------------------|------|-------------|
+| `pointCloudFineFullField.csv`  | 35.8 MB | full field, 2 cm step, 10° azimuthal (~200 k points) |
+| `pointCloudRoughFullField.csv` |  7.5 MB | full field, 10 cm step, 10° azimuthal (~42 k points) |
+| `pointCloudRoughHalfField.csv` |  7.5 MB | **half** field, 10 cm step, 10° azimuthal (not used here) |
 
 **CSV format** (surveyor frame, mm and Tesla):
 
