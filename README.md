@@ -131,6 +131,43 @@ The comparison window is the tracking volume (r ≤ 80 cm, |z| ≤ 100 cm).
   construction) vs OPERA 45.9 mT/cm — the latter is the known artifact of storing
   Bx,By,Bz as three independent trilinear grids, not a defect of either map.
 
+### Solenoid tilt: measured vs OPERA
+
+A rigid tilt of the solenoid axis relative to the sPHENIX z axis shows up as a
+non-zero **φ-averaged transverse field**: for a perfectly axial field the radial
+component cancels in the azimuthal mean, so a residual ⟨B⊥⟩ ≈ |B|·θ measures the
+tilt. `analysis/checkAlignment.C` computes this for the measurement; the same
+calculation applied to the OPERA `TNtuple` (mean of `bx,by,bz` over the symmetric
+Cartesian grid) gives the OPERA tilt.
+
+| Map | \|tilt\| θ | direction | net ⟨B⊥⟩ |
+|-----|-----------|-----------|----------|
+| **Measured (2022-12-02)** | **4.13 mrad** (θx = −4.12, θy = +0.29) | azimuth ≈ 176° (toward −x) | ⟨Bx⟩ ≈ −5.8 mT |
+| **OPERA** (official `sphenix3dmapxyz.root`) | **≈ 0.02–0.05 mrad** | (chimney only) | ⟨Bx⟩,⟨By⟩ < 0.07 mT |
+
+**The measured solenoid carries a real ~4 mrad axis tilt; OPERA does not.** OPERA
+is an idealized calculation, axisymmetric apart from the chimney, so its residual
+transverse field is two orders of magnitude smaller (and is just the chimney
+breaking azimuthal symmetry). The measured tilt is a physical misalignment of the
+magnet axis relative to the surveyor frame and **should be cross-checked against
+the survey before being quoted** as a hardware number.
+
+The same tilt appears as a small m=1 modulation of Bz: `comparison/checkTilt.C`
+finds a mean m=1 Bz phase of ~7° in the central tracking region with amplitude
+< 1 mT, and `compareFieldMaps.C` finds the OPERA−measured difference is dominated
+by a single (m=1) direction (Bφ m=1 phase 5.9 ± 0.8°), i.e. a rigid-body
+tilt/offset rather than a winding asymmetry.
+
+> **Note — correction to the earlier comparison.** The retired
+> `cern-opera-comparison` repo stated that *OPERA* contained a ~4.1 mrad dipole
+> "toward −y" that was absent from the measurement. Measured against the **official**
+> OPERA map (`sphenixoperamaps/sphenix3dmapxyz.root`) with the φ-averaged method
+> above, OPERA shows **no** such tilt — it is the **measurement** that carries the
+> ~4 mrad tilt. The old statement most likely referred either to a different,
+> derived OPERA file (that analysis was hardwired to a 111³ `…trackingmapxyz.root`
+> with an extra `hz` branch, not the official map) or to the m=1 phase of the
+> *difference* rather than a tilt of OPERA itself.
+
 ### Drop-in replacement for reconstruction
 
 `export/makeMeasuredCartesianMap.C` writes
