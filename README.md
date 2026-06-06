@@ -64,8 +64,10 @@ The OPERA map is a `TNtuple` named `fieldmap` with branches `x,y,z` (cm) and
 │   ├── findCenter.C          # magnetic centre (Bz peak / Br sign change)
 │   └── checkAlignment.C      # solenoid-axis tilt vs sPHENIX z
 ├── comparison/
-│   ├── compareNewVsOpera.C   # quick overlays measured vs OPERA (grid-agnostic loader)
+│   ├── OperaMap.h            # shared OPERA loader/interpolator (grid read from ntuple)
+│   ├── compareNewVsOpera.C   # quick overlays measured vs OPERA
 │   ├── compareFieldMaps.C    # full m=0/m=1 Fourier comparison + Maxwell residuals
+│   ├── findCenterOpera.C     # OPERA magnetic centre (same estimators as findCenter.C)
 │   └── checkTilt.C           # azimuthal m=1 tilt signature from the raw CSVs
 ├── export/
 │   └── makeMeasuredCartesianMap.C  # PHField3DCartesian drop-in ROOT file for reco
@@ -88,6 +90,7 @@ root -l -b -q 'analysis/checkAlignment.C+("data","plots")'
 root -l -b -q 'comparison/compareNewVsOpera.C+("data","data/sphenix3dmapxyz.root","plots")'
 root -l -b -q 'comparison/compareFieldMaps.C+'          # defaults to data/sphenix3dmapxyz.root
 root -l -b -q 'comparison/checkTilt.C+'
+root -l -b -q 'comparison/findCenterOpera.C+("data/sphenix3dmapxyz.root")'
 
 # Drop-in Cartesian map for sPHENIX reconstruction
 root -l -b -q 'export/makeMeasuredCartesianMap.C+'      # -> output/sphenix_measured_fieldmap_cartesian.root
@@ -126,8 +129,10 @@ Both maps agree with each other and with the **28.5 mm design coil offset**
 crossing, **not** by `argmax` of on-axis Bz: the field is flat to < 0.1 mT over
 ±40 mm of the peak, the 2 cm grid has no node at 28.5 mm (nodes at 0, 20, 40 mm),
 and on OPERA the +20 and +40 mm nodes are equal to 1×10⁻⁶ T — so `argmax`
-spuriously reports +40 mm. A symmetry fit of the OPERA on-axis curve gives
-+31 mm (quartic-vertex fit +21 mm), i.e. ≈ 28.5 mm.
+spuriously reports +40 mm. `comparison/findCenterOpera.C` (the same estimators as
+`analysis/findCenter.C`) gives the OPERA centre as +31.0 mm (symmetry), +30.7 mm
+(parabola vertex), +32.2 mm (Br zero crossing) — i.e. ≈ 28.5 mm. The measured map
+gives +27.0 / +27.0 / +25.8 mm by the same three estimators.
 
 - **On-axis ΔBz(z=0) = −12.7 mT** (OPERA − measured): the measured central field
   is ~0.9 % higher than OPERA, a nearly uniform scale offset.
