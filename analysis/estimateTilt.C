@@ -27,9 +27,11 @@
 // Run from the repository root:
 //   root -l -b -q 'analysis/estimateTilt.C+("data","plots")'
 //
-// TODO(consolidation): fold the m=0 (checkAlignment.C) and m=1-Bz
-//   (comparison/checkTilt.C) estimators in here so all tilt estimates live in
-//   one macro with a single summary table.
+// Related tilt estimators are kept in separate macros (deliberately not merged,
+// so each keeps its own validated answer): the global m=0 transverse field is in
+// analysis/checkAlignment.C, and the m=1 Bz azimuthal signature is in
+// comparison/checkTilt.C.  See the README "tilt cross-checks" section for the
+// combined summary of all estimators and their errors.
 
 #include <TH1D.h>
 #include <TGraph.h>

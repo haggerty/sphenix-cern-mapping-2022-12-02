@@ -89,21 +89,27 @@ takes a data directory and/or output directory argument.
 ## How to run
 
 ```bash
-# Field-map analysis
-root -l -b -q 'analysis/checkFieldMap.C+("data","plots")'
-root -l -b -q 'analysis/findCenter.C+("data")'
-root -l -b -q 'analysis/checkAlignment.C+("data","plots")'
-root -l -b -q 'analysis/estimateTilt.C+("data","plots")'
+# Field-map analysis                                      # plots written to plots/
+root -l -b -q 'analysis/checkFieldMap.C+("data","plots")'   # -> fieldMap_overview.{pdf,png}
+root -l -b -q 'analysis/findCenter.C+("data")'              # console only (centre estimators)
+root -l -b -q 'analysis/checkAlignment.C+("data","plots")'  # -> fieldMap_alignment.{pdf,png}
+root -l -b -q 'analysis/estimateTilt.C+("data","plots")'    # -> tilt_estimates.{pdf,png}
 
 # OPERA comparison
-root -l -b -q 'comparison/compareNewVsOpera.C+("data","data/sphenix3dmapxyz.root","plots")'
-root -l -b -q 'comparison/compareFieldMaps.C+'          # defaults to data/sphenix3dmapxyz.root
-root -l -b -q 'comparison/checkTilt.C+'
-root -l -b -q 'comparison/findCenterOpera.C+("data/sphenix3dmapxyz.root")'
+root -l -b -q 'comparison/compareNewVsOpera.C+("data","data/sphenix3dmapxyz.root","plots")'  # -> compare_newVsOpera.{pdf,png}, compare_Br_z0.png
+root -l -b -q 'comparison/compareFieldMaps.C+'          # default data/sphenix3dmapxyz.root; -> plots/01_…–11_…
+root -l -b -q 'comparison/checkTilt.C+'                 # -> tilt_A…F_*.pdf (m=1 Bz maps/profiles)
+root -l -b -q 'comparison/findCenterOpera.C+("data/sphenix3dmapxyz.root")'  # console only
 
 # Drop-in Cartesian map for sPHENIX reconstruction
 root -l -b -q 'export/makeMeasuredCartesianMap.C+'      # -> output/sphenix_measured_fieldmap_cartesian.root
 ```
+
+Every plot in `plots/` is reproduced by re-running the macro listed above; the
+three tilt estimators are intentionally kept as separate macros (see the
+[tilt cross-checks](#cross-checks-three-independent-tilt-estimators)):
+`checkAlignment.C` (global m=0), `estimateTilt.C` (near-axis + axis-line fit),
+and `comparison/checkTilt.C` (m=1 Bz).
 
 The `sPHENIXFieldMap` (r, z) grid is r ∈ [0, 900] mm (25 mm step, 37 nodes),
 z ∈ [−2700, 2100] mm (20 mm step, 241 nodes); bilinear interpolation, Bφ = 0,
@@ -298,13 +304,17 @@ A prebuilt copy (111³, Bz(0,0,0) = 1.397 T) is on SDCC:
 ### Measured vs OPERA (overlays)
 ![Measured vs OPERA](plots/compare_newVsOpera.png)
 
-### Solenoid tilt estimators
+### Solenoid alignment (global m=0 transverse field vs z)
+![Alignment](plots/fieldMap_alignment.png)
+
+### Solenoid tilt estimators (near-axis + axis-line fit)
 ![Tilt estimates](plots/tilt_estimates.png)
 
 The `comparison/compareFieldMaps.C` macro additionally writes the numbered series
 `plots/01_…`–`plots/11_…` (on-axis Bz, 2-D maps, ΔBz, Br comparison, m=1
 amplitude/phase, Bφ, radial profiles, φ-dependence, ΔBz(φ=0 vs 180), Maxwell
-residuals) and `plots/tilt_*` from `checkTilt.C`.
+residuals), and `comparison/checkTilt.C` writes the `plots/tilt_A…F_*.pdf` m=1
+Bz maps and profiles.
 
 ## Dependencies
 
