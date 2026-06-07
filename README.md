@@ -200,6 +200,14 @@ breaking azimuthal symmetry). The measured tilt is a physical misalignment of th
 magnet axis relative to the surveyor frame and **should be cross-checked against
 the survey before being quoted** as a hardware number.
 
+**Physical picture.** With the sPHENIX site convention (+z = north, +x = west,
+y = up, so −x = east), θy ≈ 0 means the magnet is **level** (no pitch/roll); the
+tilt is a pure horizontal yaw of ~4 mrad about the vertical axis, swinging the
+**north end toward the east** (south end toward the west). The field follows the
+axis: mostly north, canting slightly east (⟨Bx⟩ ≈ −6 mT eastward on the ~1.4 T
+northward field). The ~4 mrad (≈ 0.23°) corresponds to ~6 mm of axis displacement
+over a ~1.5 m half-length.
+
 The same tilt appears as a small m=1 modulation of Bz: `comparison/checkTilt.C`
 finds a mean m=1 Bz phase of ~7° in the central tracking region with amplitude
 < 1 mT, and `compareFieldMaps.C` finds the OPERA−measured difference is dominated
