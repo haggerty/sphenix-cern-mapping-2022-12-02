@@ -290,8 +290,8 @@ systematic — a probe/mapper/registration **yaw of the measurement frame** — 
 contributes *exactly zero* to any of these dispersions. The error bars are
 therefore structurally **blind** to the effect most likely to fake the signal;
 they would read ~0.1 mrad even if a 4 mrad frame yaw produced the entire result
-(field data cannot separate a magnet yaw from a measurement-frame yaw — see the
-discussion of systematics).
+(field data cannot separate a magnet yaw from a measurement-frame yaw — see
+[Systematics](#systematics-is-the-4-mrad-tilt-real)).
 
 The realistic uncertainty hierarchy is:
 
@@ -311,6 +311,68 @@ the decisive external check. (Of the three statistical errors, M1's ±0.46 is th
 most trustworthy — ring-to-ring is genuinely semi-independent; M2's ±0.08 is
 optimistic even statistically, since the p(z) residuals carry unmodelled
 structure.) See `plots/tilt_estimates.{pdf,png}`.
+
+### Systematics: is the ~4 mrad tilt real?
+
+The estimators agree that a ~4 mrad rotation exists between the measured field and
+the nominal (surveyor) frame. What they **cannot** establish is *what* is rotated.
+
+**The fundamental degeneracy.** A rigid rotation of the *measuring system*
+relative to the survey frame produces field data identical to rotating the
+*magnet* by the same angle — `B_measured = R · B_true` looks the same whether `R`
+came from the magnet yawing one way or the probe/mapper yawing the other. From the
+field map alone, "magnet yawed east" and "probe yawed west" are indistinguishable.
+The signal is also small in fractional terms: ⟨B⊥⟩ ≈ 6 mT on a 1.4 T field is
+**0.4 %**, i.e. 4 mrad × 1.4 T — so a few-mrad error *anywhere* in the chain
+reproduces it exactly.
+
+**Candidate effects.**
+
+| effect | scales with Bz? | degenerate with a true yaw? | notes |
+|--------|:---:|:---:|-------|
+| Probe-triad mounting rotation | yes | yes | a few-mrad mechanical misalignment leaks Bz into B⊥ |
+| Mapper/gantry yaw vs. surveyed fiducials | yes | yes | whole field appears rotated |
+| Fiducial / registration error | yes | yes | this program already had a 265 mm *z* survey error in the old map |
+| Azimuthal rotation-stage tilt / readout offset | yes | yes | if the probe is spun in φ to sample azimuth |
+| Probe transverse–axial cross-talk / non-orthogonality | yes | yes | planar Hall effect; ~4 mrad equiv. = whole signal |
+| Mapping-arm deflection under magnetic force | yes | yes | field-dependent; absent in a magnet-off survey |
+| External / ambient uniform field | **no** | no | disfavoured: ⟨B⊥⟩ tracks Bz, so not an additive offset |
+| Coil winding asymmetry / displaced conductor | yes | no (real field) | a built-in transverse dipole, not an axis yaw; different z-dependence (the `checkTilt.C` m=1-vs-\|z\| test) |
+
+**What points toward a measurement systematic rather than a hardware yaw:**
+
+- **Map-to-map instability** — the tilt moved 2.39 → 4.13 mrad between map versions.
+  A true hardware yaw should reproduce; a value that changes between campaigns
+  points to something re-set between them (probe remount, re-registration).
+- **The survey says ~0.17 mrad** mechanically (pending the new one) — two orders of
+  magnitude smaller.
+- **It is purely horizontal** (θy ≈ 0). Gravity-driven effects (cryostat/coil sag)
+  would appear as a *vertical* pitch, not a horizontal yaw; a horizontal-only
+  rotation is more naturally an installation/registration error about the vertical
+  axis or a mapper yaw.
+- **⟨B⊥⟩ ∝ Bz** through the plateau (θ roughly constant in z) — the signature of a
+  rotation/cross-talk, which is what rules out an additive external field.
+
+**Diagnostics that could actually disentangle it:**
+
+- **The pending cryostat survey** — the only external handle that breaks the
+  degeneracy. Decisive.
+- **Current dependence** — if maps at different excitations exist: does ⟨B⊥⟩ scale
+  linearly through zero with Bz (→ rotation / cross-talk / deflection) or carry a
+  current-independent offset (→ external field)?
+- **Reproducibility across a deliberate remount** — re-survey, re-mount, re-map; if
+  the yaw changes, it lives in the measurement chain.
+- **Probe calibration residual** — the transverse reading in a known pure-axial
+  field gives the cross-talk floor directly.
+
+> **Note.** Comparing the fine and rough scans is **not** an independent
+> cross-check: the rough map was taken first in the *same campaign and setup* as
+> insurance, so it shares the same probe alignment, mapper registration and any
+> field-dependent deflection. Both inherit an identical frame yaw.
+
+**Bottom line.** Treat the ~4 mrad as a rotation between field and frame whose most
+likely home is the measurement chain. The magnet-yaws-east interpretation can be
+neither confirmed nor excluded from the map alone; the survey is required.
 
 ### Drop-in replacement for reconstruction
 
