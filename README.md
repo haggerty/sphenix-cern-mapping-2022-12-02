@@ -241,8 +241,9 @@ the ring-to-ring measurement noise (the innermost r = 50 mm ring alone gives a
 spurious 6.6 mrad). Averaging the inner rings (r ≤ 300 mm, |z| < 150 mm) gives
 **4.65 ± 0.46 mrad toward φ ≈ −171°**, where the error is the standard error of
 the mean across the 11 independent rings — i.e. the ring-to-ring scatter is the
-dominant uncertainty. This is the direct, least model-dependent estimate, and it
-confirms that a *single* small volume at the centre is too noisy to trust.
+dominant *statistical* uncertainty (the larger systematic is discussed below).
+This is the direct, least model-dependent estimate, and it confirms that a
+*single* small volume at the centre is too noisy to trust.
 
 **Method 2 — magnetic-axis line + tilt fit.** This separates a tilt from a pure
 translation of the axis, which the φ-average alone cannot. Near the axis the
@@ -270,23 +271,46 @@ parameter covariance matrix). The fit gives **|θ| = 4.40 ± 0.08 mrad toward
 axis offset (x0, y0) = (+2.6 ± 0.5, +1.2 ± 0.2) mm** at z = 0, i.e. the tilt and
 the residual translation are disentangled.
 
-Each estimator carries a natural uncertainty:
+Each estimator carries a statistical (internal-precision) error only:
 
-| Estimator | \|θ\| [mrad] | direction φ | error source |
-|-----------|--------------|-------------|--------------|
+| Estimator | \|θ\| [mrad] | direction φ | stat. error source (internal) |
+|-----------|--------------|-------------|-------------------------------|
 | `checkAlignment.C` — global φ-averaged m=0 | 3.99 ± 0.09 (4.13 point-weighted) | 176.2 ± 1.6° | spread of strong-field z-slices (\|Bz\|>1 T) |
 | `estimateTilt.C` M1 — near-axis, mean of 11 rings (r ≤ 300 mm) | 4.65 ± 0.46 | −171 ± 6° | ring-to-ring standard error |
 | `estimateTilt.C` M2 — axis-line fit | 4.40 ± 0.08 | −178.0 ± 0.3° | least-squares fit covariance |
 
 All three land at **4.0–4.7 mrad in the −x direction** (θx ≈ −4.4 mrad, θy ≈ 0).
-Note the *statistical* errors (0.1–0.5 mrad) are smaller than the **method-to-method
-spread** (~0.4–0.7 mrad, e.g. global 4.0 vs fit 4.4): the realistic uncertainty on
-the magnitude is set by that systematic spread, not by counting statistics. Within
-this map the tilt is robust and self-consistent across independent signatures. The
-*absolute* value should still be cross-checked against the survey before being
-quoted as a hardware number — it is also not perfectly stable between map versions,
-which is why the magnitude (not the existence) of the tilt warrants caution.
-See `plots/tilt_estimates.{pdf,png}`.
+
+**The ± values above are statistical only and should not be read as the
+uncertainty on a hardware tilt.** All three are *dispersion*-based (scatter across
+z-slices, across rings, or about the fit model), so they measure only how
+reproducibly *this* map pins down the field-to-frame rotation. The dominant
+systematic — a probe/mapper/registration **yaw of the measurement frame** — is
+**common-mode**: it adds the same offset to every slice, ring and z-slab, so it
+contributes *exactly zero* to any of these dispersions. The error bars are
+therefore structurally **blind** to the effect most likely to fake the signal;
+they would read ~0.1 mrad even if a 4 mrad frame yaw produced the entire result
+(field data cannot separate a magnet yaw from a measurement-frame yaw — see the
+discussion of systematics).
+
+The realistic uncertainty hierarchy is:
+
+| source | size | what it captures |
+|--------|------|------------------|
+| per-method statistical (above) | 0.1–0.5 mrad | random precision on this map |
+| method-to-method spread | ~0.5 mrad | estimator dependence (3.99 / 4.40 / 4.65) |
+| map-version spread | **~1.7 mrad** | 2.39 → 4.13 mrad across campaigns |
+| frame-yaw degeneracy | up to ~100% | cannot be bounded from the map alone |
+
+So the honest statement is: **measured field-to-frame angle ≈ 4.4 mrad (stat. ~0.1
+mrad), with a systematic uncertainty of order the value itself — consistent with
+the magnet being aligned to the survey's ~0.2 mrad.** The map establishes that a
+~4 mrad rotation exists between field and nominal frame; it cannot by itself say
+whether that rotation is the magnet, the probe, or the registration. The survey is
+the decisive external check. (Of the three statistical errors, M1's ±0.46 is the
+most trustworthy — ring-to-ring is genuinely semi-independent; M2's ±0.08 is
+optimistic even statistically, since the p(z) residuals carry unmodelled
+structure.) See `plots/tilt_estimates.{pdf,png}`.
 
 ### Drop-in replacement for reconstruction
 
