@@ -229,7 +229,7 @@ void compareTiltedOpera(const char *dataDir  = nullptr,
     mgx->Add(gOp0X,"LP"); mgx->Add(gOpTX,"LP"); mgx->Add(gMeasX,"P");
     mgx->SetMinimum(-12.); mgx->SetMaximum(10.);   // crop the z=+/-100 grid-edge spikes
     mgx->Draw("A");
-    TLegend *lg=new TLegend(0.14,0.15,0.62,0.34);
+    TLegend *lg=new TLegend(0.34,0.70,0.86,0.89);
     lg->AddEntry(gMeasX,"measured (raw point cloud)","p");
     lg->AddEntry(gOp0X,"OPERA (untilted)","lp");
     lg->AddEntry(gOpTX,"OPERA (yawed 4.4 mrad)","lp");
