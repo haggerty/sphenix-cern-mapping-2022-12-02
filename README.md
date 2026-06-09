@@ -233,7 +233,7 @@ Cartesian grid) gives the OPERA tilt.
 
 | Map | \|tilt\| θ | direction | net ⟨B⊥⟩ |
 |-----|-----------|-----------|----------|
-| **Measured (2022-12-02)** | **4.13 mrad** (θx = −4.12, θy = +0.29); 4.0–4.7 with errors below | azimuth ≈ 176° (toward −x) | ⟨Bx⟩ ≈ −5.8 mT |
+| **Measured (2022-12-02)** | **4.13 mrad** (θx −4.12, θy +0.29) | azimuth ≈ 176° (toward −x) | ⟨Bx⟩ ≈ −5.8 mT |
 | **OPERA** (official `sphenix3dmapxyz.root`) | **≈ 0.02–0.05 mrad** | (chimney only) | ⟨Bx⟩,⟨By⟩ < 0.07 mT |
 
 **The measured solenoid carries a real ~4 mrad axis tilt; OPERA does not.** OPERA
@@ -371,16 +371,16 @@ reproduces it exactly.
 
 **Candidate effects.**
 
-| effect | scales with Bz? | degenerate with a true yaw? | notes |
+| effect | ∝ Bz? | fakes a yaw? | notes |
 |--------|:---:|:---:|-------|
-| Probe-triad mounting rotation | yes | yes | a few-mrad mechanical misalignment leaks Bz into B⊥ |
-| Mapper/gantry yaw vs. surveyed fiducials | yes | yes | whole field appears rotated |
-| Fiducial / registration error | yes | yes | this program already had a 265 mm *z* survey error in the old map |
-| Azimuthal rotation-stage tilt / readout offset | yes | yes | if the probe is spun in φ to sample azimuth |
-| Probe transverse–axial cross-talk / non-orthogonality | yes | yes | planar Hall effect; ~4 mrad equiv. = whole signal |
-| Mapping-arm deflection under magnetic force | yes | yes | field-dependent; absent in a magnet-off survey |
-| External / ambient uniform field | **no** | no | disfavoured: ⟨B⊥⟩ tracks Bz, so not an additive offset |
-| Coil winding asymmetry / displaced conductor | yes | no (real field) | a built-in transverse dipole, not an axis yaw; different z-dependence (the `checkTilt.C` m=1-vs-\|z\| test) |
+| Probe-triad mounting rotation | yes | yes | mechanical misalignment leaks Bz into B⊥ |
+| Mapper/gantry yaw vs. fiducials | yes | yes | whole field appears rotated |
+| Fiducial / registration error | yes | yes | old map already had a 265 mm *z* survey error |
+| Rotation-stage tilt / readout offset | yes | yes | if the probe is spun in φ to sample azimuth |
+| Probe transverse–axial cross-talk | yes | yes | planar Hall effect; ~4 mrad ≈ whole signal |
+| Mapping-arm deflection (magnetic force) | yes | yes | field-dependent; absent in a magnet-off survey |
+| External / ambient uniform field | **no** | no | disfavoured: ⟨B⊥⟩ tracks Bz |
+| Coil winding asymmetry | yes | no *(real field)* | built-in transverse dipole, not a yaw; different z-dependence (`checkTilt.C`) |
 
 **What points toward a measurement systematic rather than a hardware yaw:**
 
@@ -453,11 +453,20 @@ measured corrections — a **+0.9 % amplitude scale** and a **4.4 mrad horizonta
 yaw** (toward −x; θ_y ≈ 0, so the magnet is treated as level). Built by
 `export/makeDeliveredMaps.C`.
 
-| name | what it is | base | extent | tilt |
-|------|------------|------|--------|------|
-| *(no file — use existing OPERA + `magfield_rescale = 1.0091`)* | OPERA at the measured amplitude only | OPERA | full cube | none |
-| `sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root` | **OPERA scaled ×1.0091 and yawed 4.4 mrad to match the mapping** — a calculated map corrected in the spirit of the measurement (**not** a measured map) | OPERA tracking map | **full cube** (defined everywhere) | yes |
-| `sphenix_solenoid_measured_smoothed_2022-12-02.root` | **The measured field** — the φ-averaged, ∇·B-enforced (r,z) reconstruction (real amplitude and z-profile, ~10 mT per-point transverse noise removed) with the measured 4.4 mrad yaw reinserted | measurement | **r ≤ 90 cm** (zero in the corners, where there is no measurement) | yes |
+| map | base | extent | tilt | use |
+|-----|:----:|:------:|:----:|-----|
+| *(no file — OPERA + `magfield_rescale = 1.0091`)* | OPERA | full cube | — | scale-only match |
+| `sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root` | OPERA | full cube | yes | r > 90 cm / full coverage |
+| `sphenix_solenoid_measured_smoothed_2022-12-02.root` | measured | r ≤ 90 cm | yes | **default** |
+
+- **`opera_matched_to_mapping`** — the OPERA calculation **rescaled ×1.0091 and
+  yawed 4.4 mrad** to match the mapping; corrected in the spirit of the
+  measurement, **not** a measured map. Defined everywhere in the cube.
+- **`measured_smoothed`** — the **measured** field: the φ-averaged, ∇·B-enforced
+  (r,z) reconstruction (real amplitude and z-profile, ~10 mT per-point transverse
+  noise removed) with the measured 4.4 mrad yaw reinserted. Zero beyond r = 90 cm.
+- **scale-only** — the bare OPERA tracking map run at `magfield_rescale = 1.0091`
+  (no new file needed).
 
 Notes:
 
