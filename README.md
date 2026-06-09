@@ -17,13 +17,12 @@ relevant for the sPHENIX solenoid field:
 > This repository replaces the earlier
 > [`haggerty/sphenix-cernfinal-map`](https://github.com/haggerty/sphenix-cernfinal-map)
 > and [`haggerty/cern-opera-comparison`](https://github.com/haggerty/cern-opera-comparison).
-> Those used an earlier geometry correction (the `cernfinal`, 2022-11-10 CSVs)
-> that contained a **~265 mm error in the surveyor→sPHENIX z position**. That
-> placed the solenoid magnetic centre at z ≈ −240 mm and produced a spurious
-> ~28 cm offset relative to OPERA. With the corrected 2022-12-02 point cloud the
-> magnetic centre lands at **z ≈ +26 mm**, in agreement with OPERA (≈ +28.5 mm,
-> the design coil offset). The
-> old repositories should be considered archival.
+> Those were built from an earlier map whose solenoid magnetic centre sat at
+> z ≈ −240 mm — **~265 mm** from where the corrected 2022-12-02 point cloud places
+> it (**z ≈ +26 mm**, in agreement with OPERA's ≈ +28.5 mm design coil offset).
+> *How the earlier and 2022-12-02 maps relate — a survey reanalysis vs. a separate
+> correction — is to be confirmed with the CERN mapping group.* The old
+> repositories should be considered archival.
 
 ## Data files
 
@@ -173,7 +172,7 @@ per-estimator values.
 - **On-axis ΔBz(z=0) = −12.7 mT** (OPERA − measured): the measured central field
   is ~0.9 % higher than OPERA, a nearly uniform scale offset.
 - **Max |ΔBz| = 13.9 mT**, **max |ΔBr| = 3.1 mT** over the tracking volume — no
-  z-offset or shape disagreement, unlike the old `cernfinal` map.
+  z-offset or shape disagreement.
 - **Azimuthal (m=1) structure is small:** Bz m=1 amplitude ≤ 0.88 mT, with a
   consistent phase (Bφ m=1 phase 5.9 ± 0.8°), i.e. a single rigid-body
   tilt/offset direction rather than a winding asymmetry.
@@ -421,8 +420,8 @@ neither confirmed nor excluded from the map alone; the survey is required.
 used by `PHField3DCartesian`, carrying the measured +0.9 % amplitude and the
 4.4 mrad horizontal yaw. The deployment note that ships alongside the maps is
 [`export/MANIFEST_fieldmaps.txt`](export/MANIFEST_fieldmaps.txt) (md5s, the
-scale-only option, and the flag that the currently-deployed CDB map is the old
-cernfinal *z*-error map that must be replaced).
+scale-only option, and the flag that the currently-deployed CDB map is z-shifted
+— centre at z ≈ −240 mm — and must be replaced).
 
 ## Summary
 

@@ -50,23 +50,25 @@ To run the bare OPERA tracking map at the measured amplitude only (no yaw),
 use the existing OPERA map with  magfield_rescale = 1.0091.
 
 
-ACTION NEEDED — the CURRENTLY DEPLOYED CDB map is WRONG
--------------------------------------------------------
+ACTION NEEDED — the CURRENTLY DEPLOYED CDB map is z-shifted
+-----------------------------------------------------------
 The map currently registered in the FIELDMAP_TRACKING CDB,
   .../FIELDMAP_TRACKING/dd/c3/ddc326dc1e3d7712df93d0bb08928c9d_sphenix_measured_fieldmap_cartesian.root
   (dated 2026-05-06)
-is the OLD "cernfinal" (2022-11-10) map, which has a ~265 mm error in the
-surveyor->sPHENIX z position:  its magnetic center is at z = -240 mm and
-Bz(0,0,0) = 1.394 T.  The CORRECT 2022-12-02 geometry puts the center at
-z = +26 mm with Bz(0,0,0) = 1.397 T.
+has its magnetic center at z = -240 mm with Bz(0,0,0) = 1.394 T.  The corrected
+2022-12-02 geometry puts the center at z = +26 mm with Bz(0,0,0) = 1.397 T -- a
+~265 mm z-shift.  (How that earlier map relates to the 2022-12-02 one -- a survey
+reanalysis vs. a separate correction -- is to be confirmed with the CERN mapping
+group.)
 
-  >>> Production tracking is running on a field map centered 265 mm off. <<<
-  >>> Please replace it with sphenix_solenoid_measured_smoothed_2022-12-02.root. <<<
+  >>> Production tracking is running on a field map centered ~265 mm off. <<<
+  >>> Please replace it with one of the corrected 2022-12-02 maps above
+  >>> (which one is a tracking-group decision). <<<
 
 (The local file sphenix_measured_fieldmap_cartesian.root, dated 2026-06-05, in
-this folder is the CORRECT-geometry interim build — center +28 mm — but it is
+this folder is a CORRECT-geometry interim build — center +28 mm — but it is
 axisymmetric, has no tilt, and has the unhelpful old name; it was never
-registered.  Both it and the deployed cernfinal map are superseded by the two
+registered.  Both it and the deployed z-shifted map are superseded by the two
 2022-12-02 maps above.)
 
 
