@@ -342,7 +342,6 @@ The realistic uncertainty hierarchy is:
 |--------|------|------------------|
 | per-method statistical (above) | 0.1–0.5 mrad | random precision on this map |
 | method-to-method spread | ~0.5 mrad | estimator dependence (3.99 / 4.40 / 4.65) |
-| map-version spread | **~1.7 mrad** | 2.39 → 4.13 mrad across campaigns |
 | frame-yaw degeneracy | up to ~100% | cannot be bounded from the map alone |
 
 So the honest statement is: **measured field-to-frame angle ≈ 4.4 mrad (stat. ~0.1
@@ -384,9 +383,6 @@ reproduces it exactly.
 
 **What points toward a measurement systematic rather than a hardware yaw:**
 
-- **Map-to-map instability** — the tilt moved 2.39 → 4.13 mrad between map versions.
-  A true hardware yaw should reproduce; a value that changes between campaigns
-  points to something re-set between them (probe remount, re-registration).
 - **The survey says ~0.17 mrad** mechanically (pending the new one) — two orders of
   magnitude smaller.
 - **It is purely horizontal** (θy ≈ 0). Gravity-driven effects (cryostat/coil sag)
