@@ -57,6 +57,21 @@ x_s, y_s, z_s, |B|, Bx_s, By_s, Bz_s
 `x_phx = x_s`, `y_phx = z_s`, `z_phx = −y_s`;
 `Bx_phx = Bx_s`, `By_phx = Bz_s`, `Bz_phx = −By_s`.
 
+**Measured extent** of the raw points, in sPHENIX coordinates (the data
+coverage, distinct from the interpolation grid the loader builds):
+
+| Map | points | x (mm) | y (mm) | z (mm) | r (mm) | φ |
+|-----|-------:|--------|--------|--------|--------|---|
+| `pointCloudFineFullField`  | ~200 k | −859 … 851 | −857 … 853 | −1784 … 2233 | 52 … 859 | full 360° |
+| `pointCloudRoughFullField` | ~42 k  | −859 … 851 | −857 … 853 | −2192 … 2206 | 52 … 859 | full 360° |
+
+- **Transverse:** cylinder of radius **~860 mm**, full azimuth, with a **central
+  hole** — the smallest sampled radius is **~52 mm** (nothing is measured on axis).
+- **Axial:** the fine map spans **z ≈ −1.78 … +2.23 m**; the rough map reaches
+  ~400 mm further south (**z down to ≈ −2.19 m**). The rough map's only unique
+  contribution is this −z (south) fringe tail below ≈ −1785 mm — elsewhere the
+  fine map overrides it.
+
 The OPERA map is a `TNtuple` named `fieldmap` with branches `x,y,z` (cm) and
 `bx,by,bz` (T) on a uniform Cartesian grid.
 
