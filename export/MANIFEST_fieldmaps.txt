@@ -1,0 +1,80 @@
+sPHENIX solenoid field maps — CERN 2022-12-02 mapping
+=====================================================
+Staged: 2026-06-09 (John Haggerty)
+Analysis / provenance: https://github.com/haggerty/sphenix-cern-mapping-2022-12-02
+
+These two maps are for the FIELDMAP_TRACKING CDB domain (where the current
+measured map lives).  Both are TNtuple "fieldmap" (x:y:z:bx:by:bz:hz, cm/T) on
+the production 111^3 / +-110 cm PHField3DCartesian grid — drop-in for the
+existing OPERA tracking map.
+
+Both carry the two physical results of the 2022-12-02 mapping:
+  - a uniform +0.9 % amplitude scale (Bz(0,0,0) = 1.397 T; OPERA is 1.385 T),
+  - a 4.4 mrad horizontal yaw of the field toward -x ("east"); theta_y ~ 0,
+    i.e. the magnet is treated as level.
+
+  >>> magfield_rescale = 1.0 with BOTH of these files. <<<
+  (The +0.9 % is already baked in.  The 1.0091 factor below is ONLY for the
+   bare, uncorrected OPERA map.)
+
+
+FILES
+-----
+Which file to register for production is a tracking-group decision.  The two
+agree to ~0.84 mT in the tracking volume; they differ only in coverage beyond
+r = 90 cm (zero vs. OPERA-filled) and in provenance.  And, pending the survey,
+whether the 4.4 mrad yaw should be applied at all is itself open (see CAVEAT).
+
+sphenix_solenoid_measured_smoothed_2022-12-02.root      (8.3 MB)
+    The MEASURED field: the phi-averaged, div.B-enforced (r,z) reconstruction
+    of the point cloud (real amplitude and z-profile; the ~10 mT per-point
+    transverse measurement noise is averaged out) with the measured 4.4 mrad
+    yaw reinserted as a rigid rotation.
+    Coverage: r <= 90 cm.  Field is ZERO in the cube corners (r > 90 cm), where
+    there is no measurement.
+    md5 = ee89cad7156467cdc028fa86d84e8a90
+
+sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root   (19.2 MB)
+    The OPERA calculation rescaled x1.0091 and yawed 4.4 mrad to match the
+    mapping — i.e. OPERA corrected in the spirit of the measurement.
+    It is NOT a measured map.  Defined everywhere in the cube (no zeros), so it
+    is the option for anything that samples r > 90 cm (field integrals, swimming
+    to calorimeter, TPC outer edge).
+    Agrees with the measured map to ~0.84 mT in the tracking volume.
+    md5 = 574164b77701acb4a635ff58a4086346
+
+
+SCALE-ONLY OPTION (no file)
+---------------------------
+To run the bare OPERA tracking map at the measured amplitude only (no yaw),
+use the existing OPERA map with  magfield_rescale = 1.0091.
+
+
+ACTION NEEDED — the CURRENTLY DEPLOYED CDB map is WRONG
+-------------------------------------------------------
+The map currently registered in the FIELDMAP_TRACKING CDB,
+  .../FIELDMAP_TRACKING/dd/c3/ddc326dc1e3d7712df93d0bb08928c9d_sphenix_measured_fieldmap_cartesian.root
+  (dated 2026-05-06)
+is the OLD "cernfinal" (2022-11-10) map, which has a ~265 mm error in the
+surveyor->sPHENIX z position:  its magnetic center is at z = -240 mm and
+Bz(0,0,0) = 1.394 T.  The CORRECT 2022-12-02 geometry puts the center at
+z = +26 mm with Bz(0,0,0) = 1.397 T.
+
+  >>> Production tracking is running on a field map centered 265 mm off. <<<
+  >>> Please replace it with sphenix_solenoid_measured_smoothed_2022-12-02.root. <<<
+
+(The local file sphenix_measured_fieldmap_cartesian.root, dated 2026-06-05, in
+this folder is the CORRECT-geometry interim build — center +28 mm — but it is
+axisymmetric, has no tilt, and has the unhelpful old name; it was never
+registered.  Both it and the deployed cernfinal map are superseded by the two
+2022-12-02 maps above.)
+
+
+CAVEAT (alignment)
+------------------
+The 4.4 mrad yaw is applied as a rigid rotation.  The field map alone cannot
+say whether that rotation is a real magnet yaw or a measurement-frame
+(probe/mapper/registration) systematic — that is what the cryostat survey will
+decide.  If the survey shows it is a measurement artifact, the yaw should be
+dropped (rebuild with THETA_X = 0 in export/makeDeliveredMaps.C).
+See the repo's "Systematics" and "Maps delivered to tracking" sections.
