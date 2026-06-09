@@ -170,6 +170,17 @@ per-estimator values.
   construction) vs OPERA 45.9 mT/cm — the latter is the known artifact of storing
   Bx,By,Bz as three independent trilinear grids, not a defect of either map.
 
+**Bottom line.** After a uniform 0.9 % normalization and the 4.4 mrad rotation,
+the measured **Bz** matches the OPERA calculation to **0.84 mT RMS** point-by-point
+across the tracking volume — better than one part in a thousand. (The small
+transverse components agree in azimuthal average — that is the 4.4 mrad tilt — and
+their ~10 mT point-to-point scatter is measurement noise, not a field
+disagreement.) So the only physical differences between the measured field and the
+calculation are a single **calibration** number (the ~0.9 % scale) and a single
+**alignment** angle (the ~4.4 mrad rotation); the field *shape* is reproduced to
+the sub-mT level. The residual RMS at each stage (raw → remove scale → remove
+rotation → both) is printed by `comparison/compareTiltedOpera.C`.
+
 ### Magnetic centre
 
 On-axis Bz is flat to < 0.1 mT over several cm around the peak, so a plain

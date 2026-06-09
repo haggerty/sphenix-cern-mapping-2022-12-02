@@ -141,6 +141,13 @@ void compareTiltedOpera(const char *dataDir  = nullptr,
     //     x=x_s, y=z_s, z=-y_s ; Bx_phx=Bx_s, By_phx=Bz_s ; r=sqrt(x_s^2+z_s^2)
     // ─────────────────────────────────────────────────────────────────────────
     std::vector<double> sBx(NZ,0), sBy(NZ,0); std::vector<long> nB(NZ,0);
+    // Residual accumulators (evaluated at every raw measured point in the volume).
+    // Storing Sigma m^2, Sigma m.o, Sigma o^2 lets us evaluate the RMS of
+    // (meas - s*model) at ANY scale s afterwards, incl. the best-fit s* = Smo/Soo.
+    // Suffix 0 = untilted OPERA, T = yawed OPERA; pp = transverse (x,y), zz = Bz.
+    double Smm=0, Smo0=0,Soo0=0, SmoT=0,SooT=0;            // full |B| (all 3 comps)
+    double Smm_pp=0,SmoT_pp=0,SooT_pp=0, Smm_zz=0,SmoT_zz=0,SooT_zz=0; // yawed splits
+    long   Nres=0;
     {
         std::ifstream f(FINE);
         if (!f.is_open()) { printf("  cannot open %s; abort.\n", FINE.c_str()); return; }
@@ -160,9 +167,45 @@ void compareTiltedOpera(const char *dataDir  = nullptr,
             if (iz < 0 || iz >= NZ) continue;
             sBx[iz] += bxs;   sBy[iz] += bzs;   nB[iz] += 1;   // Bx_phx, By_phx
             ++used;
+
+            // measured field in sPHENIX Cartesian: Bx=Bx_s, By=Bz_s, Bz=-By_s
+            double mx=bxs, my=bzs, mz=-bys;
+            double o0x,o0y,o0z, otx,oty,otz;
+            bool ok0 = op.get(xp/10., yp/10., zp/10., o0x,o0y,o0z);
+            bool okT = operaTilted(xp/10., yp/10., zp/10., otx,oty,otz);
+            if (ok0 && okT) {
+                Smm  += mx*mx+my*my+mz*mz;
+                Smo0 += mx*o0x+my*o0y+mz*o0z;  Soo0 += o0x*o0x+o0y*o0y+o0z*o0z;
+                SmoT += mx*otx+my*oty+mz*otz;  SooT += otx*otx+oty*oty+otz*otz;
+                Smm_pp += mx*mx+my*my; SmoT_pp += mx*otx+my*oty; SooT_pp += otx*otx+oty*oty;
+                Smm_zz += mz*mz;       SmoT_zz += mz*otz;        SooT_zz += otz*otz;
+                ++Nres;
+            }
         }
-        printf("=== Raw measured transverse field: %ld points in tracking volume ===\n", used);
+        printf("=== Raw measured field: %ld points in tracking volume (%ld with OPERA overlap) ===\n",
+               used, Nres);
     }
+
+    // ── Residual RMS of (measured - s * model) over the raw points ──────────────
+    auto rmsAt = [&](double Smm_,double Smo_,double Soo_,double s,long N)->double{
+        double v=(Smm_ - 2*s*Smo_ + s*s*Soo_)/N; return std::sqrt(v>0?v:0)*1e3; }; // mT
+    const double S_NOM = 1.397/1.385;          // nominal +0.9% (Bz(0,0,0) ratio)
+    double sBest0 = Smo0/Soo0, sBestT = SmoT/SooT;
+    printf("\n  ── Residual RMS of |measured - s.OPERA| over the tracking volume (%ld pts) ──\n", Nres);
+    printf("    untilted, s=1           : %6.2f mT   (raw difference: scale + rotation)\n",
+           rmsAt(Smm,Smo0,Soo0,1.0,Nres));
+    printf("    untilted, s=%.4f (best) : %6.2f mT   (remove scale only -> tilt remains)\n",
+           sBest0, rmsAt(Smm,Smo0,Soo0,sBest0,Nres));
+    printf("    yawed,    s=1           : %6.2f mT   (remove rotation only -> scale remains)\n",
+           rmsAt(Smm,SmoT,SooT,1.0,Nres));
+    printf("    yawed,    s=%.4f (nom)  : %6.2f mT   (remove rotation + nominal +0.9%%)\n",
+           S_NOM, rmsAt(Smm,SmoT,SooT,S_NOM,Nres));
+    printf("    yawed,    s=%.4f (best) : %6.2f mT   <- residual after scale + rotation\n",
+           sBestT, rmsAt(Smm,SmoT,SooT,sBestT,Nres));
+    printf("      of which  transverse  : %6.2f mT   |  Bz : %6.2f mT\n",
+           rmsAt(Smm_pp,SmoT_pp,SooT_pp,sBestT,Nres), rmsAt(Smm_zz,SmoT_zz,SooT_zz,sBestT,Nres));
+    printf("    best-fit scale = %.4f  (i.e. measured is %.2f%% above OPERA)\n",
+           sBestT, (sBestT-1)*100.);
 
     TGraph *gMeasX=new TGraph(); TGraph *gOp0X=new TGraph(); TGraph *gOpTX=new TGraph();
     TGraph *gMeasY=new TGraph(); TGraph *gOp0Y=new TGraph(); TGraph *gOpTY=new TGraph();
