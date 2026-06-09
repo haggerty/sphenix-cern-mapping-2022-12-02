@@ -170,16 +170,6 @@ per-estimator values.
   construction) vs OPERA 45.9 mT/cm — the latter is the known artifact of storing
   Bx,By,Bz as three independent trilinear grids, not a defect of either map.
 
-**Bottom line.** After a uniform 0.9 % normalization and the 4.4 mrad rotation,
-the measured **Bz** matches the OPERA calculation to **0.84 mT RMS** point-by-point
-across the tracking volume — better than one part in a thousand. (The small
-transverse components agree in azimuthal average — that is the 4.4 mrad tilt — and
-their ~10 mT point-to-point scatter is measurement noise, not a field
-disagreement.) So the only physical differences between the measured field and the
-calculation are a single **calibration** number (the ~0.9 % scale) and a single
-**alignment** angle (the ~4.4 mrad rotation); the field *shape* is reproduced to
-the sub-mT level.
-
 Residual RMS of `|measured − s·OPERA|` over the tracking volume (~102 k raw
 measured points), from `comparison/compareTiltedOpera.C`:
 
@@ -431,6 +421,26 @@ A prebuilt copy (111³, Bz(0,0,0) = 1.397 T) is on SDCC:
 ```
 /sphenix/data/data02/sphenix/MagnetMapping/cern_2022-12-02/sphenix_measured_fieldmap_cartesian.root
 ```
+
+## Summary
+
+> ### The measured 2022-12-02 field validates the OPERA map used in reconstruction.
+>
+> After a single uniform **0.9 % normalization** and a single **4.4 mrad rigid
+> rotation**, the measured **Bz** reproduces the OPERA calculation to
+> **0.84 mT RMS** point-by-point across the tracking volume — **better than one
+> part in a thousand**, with no z-offset and no shape disagreement
+> (see [Comparison with OPERA](#comparison-with-opera)).
+>
+> The only two physical differences are therefore **one calibration number** and
+> **one alignment angle**:
+>
+> - **~0.9 % scale** — the measured field is ~0.9 % above OPERA; a probe-calibration
+>   question for the CERN mapping group.
+> - **~4.4 mrad rotation** — between the measured field and the nominal frame; an
+>   alignment question for the cryostat survey. The map alone cannot say whether it
+>   is the magnet, the mapping fixture, or the registration that is rotated
+>   (see [Systematics](#systematics-is-the-4-mrad-tilt-real)).
 
 ## Plots
 
