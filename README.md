@@ -423,7 +423,10 @@ neither confirmed nor excluded from the map alone; the survey is required.
 [Maps delivered to tracking](#maps-delivered-to-tracking) — both `TNtuple`
 (`x:y:z:bx:by:bz:hz`, cm/T) on the production 111³ grid (±110 cm, 2 cm steps)
 used by `PHField3DCartesian`, carrying the measured +0.9 % amplitude and the
-4.4 mrad horizontal yaw.
+4.4 mrad horizontal yaw. The deployment note that ships alongside the maps is
+[`export/MANIFEST_fieldmaps.txt`](export/MANIFEST_fieldmaps.txt) (md5s, the
+scale-only option, and the flag that the currently-deployed CDB map is the old
+cernfinal *z*-error map that must be replaced).
 
 ## Summary
 
