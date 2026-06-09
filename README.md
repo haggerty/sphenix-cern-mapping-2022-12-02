@@ -25,21 +25,32 @@ relevant for the sPHENIX solenoid field:
 > the design coil offset). The
 > old repositories should be considered archival.
 
-## Data files (not stored in git)
+## Data files
 
-The measurement CSVs (~43 MB) and the OPERA ROOT file are not committed. Place
-them under `data/` (git-ignored) before running, e.g. as symlinks:
+The original 2022-12-02 mapping tarball **`download.tar` is committed at the repo
+root** (~48 MB), so the measured-field inputs travel with the analysis. Unpack it
+into `data/` (git-ignored) before running:
 
-| File | Source |
-|------|--------|
-| `data/pointCloudFineFullField.csv`  | 2 cm step, 10° azimuthal, ~200 k points |
-| `data/pointCloudRoughFullField.csv` | 10 cm step, 10° azimuthal, ~42 k points |
-| `data/sphenix3dmapxyz.root`         | official OPERA map (see `sphenixoperamaps`) |
+```bash
+mkdir -p data && tar xf download.tar -C data
+```
 
-The measured CSVs come from the 2022-12-02 mapping tarball `download.tar`; on
-SDCC the tarball and the unpacked CSVs are at
-`/sphenix/data/data02/sphenix/MagnetMapping/cern_2022-12-02/`. The tarball
-contains three maps (the analysis uses the two full-field ones):
+This gives the repo everything needed to reproduce the **measured** map and all
+measured-field analysis. The **OPERA** comparison and the `opera_matched_to_mapping`
+delivered map additionally need the OPERA map, which is **not** committed (it
+belongs to [`sphenixoperamaps`](https://github.com/haggerty/sphenixoperamaps) /
+the `FIELDMAP_TRACKING` CDB) — place it at `data/sphenix3dmapxyz.root`
+(±80/±100 cm comparison file) and/or `data/sphenix3dtrackingmapxyz.root` (111³
+production grid).
+
+| File in `download.tar` | Size | Description |
+|------------------------|------|-------------|
+| `pointCloudFineFullField.csv`  | 35.8 MB | full field, 2 cm step, 10° azimuthal (~200 k points) |
+| `pointCloudRoughFullField.csv` |  7.5 MB | full field, 10 cm step, 10° azimuthal (~42 k points) |
+| `pointCloudRoughHalfField.csv` |  7.5 MB | **half** field, 10 cm step, 10° azimuthal (not used here) |
+
+On SDCC the tarball and unpacked CSVs are also at
+`/sphenix/data/data02/sphenix/MagnetMapping/cern_2022-12-02/`.
 
 | File in `download.tar` | Size | Description |
 |------------------------|------|-------------|
