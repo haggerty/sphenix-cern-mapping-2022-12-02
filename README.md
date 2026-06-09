@@ -114,6 +114,7 @@ root -l -b -q 'analysis/estimateTilt.C+("data","plots")'    # -> tilt_estimates.
 root -l -b -q 'comparison/compareNewVsOpera.C+("data","data/sphenix3dmapxyz.root","plots")'  # -> compare_newVsOpera.{pdf,png}, compare_Br_z0.png
 root -l -b -q 'comparison/compareFieldMaps.C+'          # default data/sphenix3dmapxyz.root; -> plots/01_…–11_…
 root -l -b -q 'comparison/checkTilt.C+'                 # -> tilt_A…F_*.pdf (m=1 Bz maps/profiles)
+root -l -b -q 'comparison/compareTiltedOpera.C+("data","data/sphenix3dmapxyz.root","plots")'  # -> tiltedOpera_*.{pdf,png}
 root -l -b -q 'comparison/findCenterOpera.C+("data/sphenix3dmapxyz.root")'  # console only
 
 # Drop-in Cartesian map for sPHENIX reconstruction
@@ -418,6 +419,21 @@ A prebuilt copy (111³, Bz(0,0,0) = 1.397 T) is on SDCC:
 
 ### Solenoid tilt estimators (near-axis + axis-line fit)
 ![Tilt estimates](plots/tilt_estimates.png)
+
+### Yawing OPERA by the measured tilt
+![Tilt vs z, OPERA yawed to match measured](plots/tiltedOpera_transverse_vs_z.png)
+![Field the yaw adds to OPERA](plots/tiltedOpera_yaw_correction_maps.png)
+
+*`comparison/compareTiltedOpera.C` applies the measured ≈ 4.4 mrad yaw
+(`R_y(θ)`, θx = −4.40 mrad, θy ≈ 0) to the OPERA map and asks what the
+measured − calculated difference would look like. Top: the φ-averaged transverse
+field ⟨Bx⟩(z). The measured raw data (black) sit at ≈ −6 mT; OPERA untilted (blue)
+is ≈ 0; OPERA yawed by 4.4 mrad (red) reproduces the measured value across the
+plateau — the transverse difference is the tilt. Bottom: the field the yaw adds to
+OPERA — a uniform ΔBx ≈ −6 mT (left, = the difference it removes) and only a
+sub-few-mT, antisymmetric-in-x ΔBz in the fringe corners (right). The ~0.9 %
+(~12.7 mT) Bz scale offset is rotation-invariant and is left untouched, so after the
+yaw the residual is just that scale offset plus sub-mT fringe structure.*
 
 The `comparison/compareFieldMaps.C` macro additionally writes the numbered series
 `plots/01_…`–`plots/11_…` (on-axis Bz, 2-D maps, ΔBz, Br comparison, m=1
