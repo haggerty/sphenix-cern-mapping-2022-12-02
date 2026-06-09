@@ -74,7 +74,16 @@ void compareTiltedOpera(const char *dataDir  = nullptr,
                         const char *calcRoot = nullptr,
                         const char *outDir   = nullptr,
                         double tiltX_mrad    = -4.40,   // theta_x (toward -x), Method 2
-                        double tiltY_mrad    =  0.00)   // theta_y (~0, level)
+                        double tiltY_mrad    =  0.00,   // theta_y (~0, level)
+                        // Opt-in: also overlay the FULL Method-2 rigid alignment
+                        // (yaw theta_x,theta_y + transverse axis offset x0,y0).
+                        // Default off -> the headline simple-yaw plot is unchanged.
+                        // When on, the extra curve is drawn and output files get a
+                        // "_fullalign" suffix so the committed plots are untouched.
+                        bool   drawFull      = false,
+                        double fullTiltY_mrad = -0.16,  // Method-2 theta_y
+                        double offX_mm        =  2.6,   // Method-2 axis offset x0
+                        double offY_mm        =  1.2)   // Method-2 axis offset y0
 {
     gROOT->SetBatch(kTRUE);
     gStyle->SetOptStat(0);
@@ -111,6 +120,21 @@ void compareTiltedOpera(const char *dataDir  = nullptr,
         return ok;
     };
 
+    // ── full Method-2 alignment sampler: yaw R(tfx,tfy) + axis offset (x0,y0) ────
+    // B(r) = R . B_opera( R^{-1}(r - d) ),  d = (x0,y0,0) cm.  The offset is the
+    // small TRANSLATION of the magnetic axis; it (not a tilt) produces the sloped,
+    // antisymmetric-in-z <By>(z) seen in the data.
+    const double tfx = tiltX_mrad   * 1e-3;   // keep the same theta_x as the simple yaw
+    const double tfy = fullTiltY_mrad * 1e-3;
+    const double x0c = offX_mm / 10.,  y0c = offY_mm / 10.;   // cm
+    auto operaFull = [&](double x, double y, double z,
+                         double &Bx, double &By, double &Bz) -> bool {
+        double xs = (x - x0c) - tfx*z,  ys = (y - y0c) - tfy*z,  zs = z + tfx*x + tfy*y;
+        double bx, by, bz;  bool ok = op.get(xs, ys, zs, bx, by, bz);
+        Bx = bx + tfx*bz;  By = by + tfy*bz;  Bz = bz - tfx*bx - tfy*by;
+        return ok;
+    };
+
     // ─────────────────────────────────────────────────────────────────────────
     // (A) measured <Bx>,<By> vs z from the RAW point cloud (the tilt observable)
     //     CSV cols: x_s,y_s,z_s,|B|,Bx_s,By_s,Bz_s  ->  sPHENIX:
@@ -142,25 +166,28 @@ void compareTiltedOpera(const char *dataDir  = nullptr,
 
     TGraph *gMeasX=new TGraph(); TGraph *gOp0X=new TGraph(); TGraph *gOpTX=new TGraph();
     TGraph *gMeasY=new TGraph(); TGraph *gOp0Y=new TGraph(); TGraph *gOpTY=new TGraph();
+    TGraph *gFullX=new TGraph(); TGraph *gFullY=new TGraph();   // full Method-2 align
     const int    NRr=8, NPp=36;                 // rings r=10..80 cm, phi step 10 deg
     int kM=0, kO=0;
     double measXacc=0, opTXacc=0; int nAcc=0;   // plateau means for the printout
     for (int iz=0; iz<NZ; ++iz) {
         double z = Z0 + iz*DZc;
-        // OPERA (untilted / yawed) phi-average of Cartesian transverse field
-        double s0x=0,s0y=0,sTx=0,sTy=0; int n=0;
+        // OPERA (untilted / yawed / full-align) phi-average of Cartesian transverse field
+        double s0x=0,s0y=0,sTx=0,sTy=0,sFx=0,sFy=0; int n=0;
         for (int ir=0; ir<NRr; ++ir) { double r=10.+ir*10.;
             for (int ip=0; ip<NPp; ++ip) { double phi=ip*10.*M_PI/180.;
                 double x=r*std::cos(phi), y=r*std::sin(phi);
-                double o0x,o0y,o0z, otx,oty,otz;
+                double o0x,o0y,o0z, otx,oty,otz, ofx,ofy,ofz;
                 bool ok0 = op.get(x,y,z,o0x,o0y,o0z);
                 bool okT = operaTilted(x,y,z,otx,oty,otz);
-                if (!ok0 || !okT) continue;                 // skip grid-boundary points
-                s0x+=o0x; s0y+=o0y; sTx+=otx; sTy+=oty; ++n;
+                bool okF = operaFull(x,y,z,ofx,ofy,ofz);
+                if (!ok0 || !okT || !okF) continue;          // skip grid-boundary points
+                s0x+=o0x; s0y+=o0y; sTx+=otx; sTy+=oty; sFx+=ofx; sFy+=ofy; ++n;
             } }
         if (n==0) continue;
         gOp0X->SetPoint(kO,z,s0x/n*1e3); gOpTX->SetPoint(kO,z,sTx/n*1e3);
-        gOp0Y->SetPoint(kO,z,s0y/n*1e3); gOpTY->SetPoint(kO,z,sTy/n*1e3); ++kO;
+        gOp0Y->SetPoint(kO,z,s0y/n*1e3); gOpTY->SetPoint(kO,z,sTy/n*1e3);
+        gFullX->SetPoint(kO,z,sFx/n*1e3); gFullY->SetPoint(kO,z,sFy/n*1e3); ++kO;
         // measured (raw) where the slab has points
         if (nB[iz] > 0) {
             double mx=sBx[iz]/nB[iz]*1e3, my=sBy[iz]/nB[iz]*1e3;
@@ -220,29 +247,42 @@ void compareTiltedOpera(const char *dataDir  = nullptr,
         g->SetLineWidth(2); g->SetMarkerStyle(m); g->SetMarkerSize(0.7); };
     style(gMeasX,kBlack,20); style(gOp0X,kAzure+1,24); style(gOpTX,kRed+1,21);
     style(gMeasY,kBlack,20); style(gOp0Y,kAzure+1,24); style(gOpTY,kRed+1,21);
+    style(gFullX,kGreen+2,22); style(gFullY,kGreen+2,22);
+    gFullX->SetLineStyle(2); gFullY->SetLineStyle(2);
 
     TCanvas *c2=new TCanvas("c2","transverse field vs z",1300,600);
     c2->Divide(2,1);
     c2->cd(1);
     TMultiGraph *mgx=new TMultiGraph();
     mgx->SetTitle("#LTB_{x}#GT vs z  (measured raw vs OPERA);z [cm];#LTB_{x}#GT [mT]");
-    mgx->Add(gOp0X,"LP"); mgx->Add(gOpTX,"LP"); mgx->Add(gMeasX,"P");
+    mgx->Add(gOp0X,"LP"); mgx->Add(gOpTX,"LP");
+    if (drawFull) mgx->Add(gFullX,"LP");
+    mgx->Add(gMeasX,"P");
     mgx->SetMinimum(-12.); mgx->SetMaximum(10.);   // crop the z=+/-100 grid-edge spikes
     mgx->Draw("A");
-    TLegend *lg=new TLegend(0.34,0.70,0.86,0.89);
+    TLegend *lg=new TLegend(0.34,0.68,0.88,0.89);
     lg->AddEntry(gMeasX,"measured (raw point cloud)","p");
     lg->AddEntry(gOp0X,"OPERA (untilted)","lp");
     lg->AddEntry(gOpTX,"OPERA (yawed 4.4 mrad)","lp");
+    if (drawFull) lg->AddEntry(gFullX,"OPERA (full Method-2: yaw + axis offset)","lp");
     lg->Draw();
     c2->cd(2);
     TMultiGraph *mgy=new TMultiGraph();
     mgy->SetTitle("#LTB_{y}#GT vs z  (measured raw vs OPERA);z [cm];#LTB_{y}#GT [mT]");
-    mgy->Add(gOp0Y,"LP"); mgy->Add(gOpTY,"LP"); mgy->Add(gMeasY,"P");
+    mgy->Add(gOp0Y,"LP"); mgy->Add(gOpTY,"LP");
+    if (drawFull) mgy->Add(gFullY,"LP");
+    mgy->Add(gMeasY,"P");
+    mgy->SetMinimum(-1.2); mgy->SetMaximum(1.2);   // crop the z=+/-100 grid-edge spikes
     mgy->Draw("A");
-    c2->SaveAs((OUT+"/tiltedOpera_transverse_vs_z.pdf").c_str());
-    c2->SaveAs((OUT+"/tiltedOpera_transverse_vs_z.png").c_str());
-    printf("  -> %s/tiltedOpera_transverse_vs_z.{pdf,png}\n", OUT.c_str());
+    const std::string sfx = drawFull ? "_fullalign" : "";
+    c2->SaveAs((OUT+"/tiltedOpera_transverse_vs_z"+sfx+".pdf").c_str());
+    c2->SaveAs((OUT+"/tiltedOpera_transverse_vs_z"+sfx+".png").c_str());
+    printf("  -> %s/tiltedOpera_transverse_vs_z%s.{pdf,png}\n", OUT.c_str(), sfx.c_str());
     delete c2;
 
+    if (drawFull)
+        printf("\n  Full Method-2 alignment overlaid: theta_x=%.2f, theta_y=%.2f mrad,"
+               " axis offset (x0,y0)=(%.1f,%.1f) mm\n",
+               tiltX_mrad, fullTiltY_mrad, offX_mm, offY_mm);
     printf("\n  Done.\n");
 }
