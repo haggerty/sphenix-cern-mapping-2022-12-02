@@ -178,8 +178,23 @@ their ~10 mT point-to-point scatter is measurement noise, not a field
 disagreement.) So the only physical differences between the measured field and the
 calculation are a single **calibration** number (the ~0.9 % scale) and a single
 **alignment** angle (the ~4.4 mrad rotation); the field *shape* is reproduced to
-the sub-mT level. The residual RMS at each stage (raw → remove scale → remove
-rotation → both) is printed by `comparison/compareTiltedOpera.C`.
+the sub-mT level.
+
+Residual RMS of `|measured − s·OPERA|` over the tracking volume (~102 k raw
+measured points), from `comparison/compareTiltedOpera.C`:
+
+| corrections applied | scale s | residual RMS \|B\| | what remains |
+|---------------------|:-------:|:-----------------:|--------------|
+| none (raw difference)       | 1.000  | 16.9 mT | scale + rotation |
+| normalization only          | 1.0091 | 11.4 mT | rotation (~6 mT) |
+| rotation only               | 1.000  | 15.8 mT | scale (~13 mT) |
+| **normalization + rotation**| 1.0091 | **9.8 mT** | transverse noise |
+
+At the final stage the residual splits into **Bz = 0.84 mT** (the meaningful
+number — better than one part in a thousand) and **transverse = 9.7 mT**, which is
+point-to-point measurement noise: the *coherent* transverse field is the 4.4 mrad
+tilt, already removed in azimuthal average (the m=1 amplitude is ≤ 0.88 mT). The
+best-fit scale 1.0091 confirms the +0.9 % seen in Bz(0,0,0).
 
 ### Magnetic centre
 
