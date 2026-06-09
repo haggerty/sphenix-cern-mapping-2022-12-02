@@ -453,11 +453,16 @@ measured corrections — a **+0.9 % amplitude scale** and a **4.4 mrad horizonta
 yaw** (toward −x; θ_y ≈ 0, so the magnet is treated as level). Built by
 `export/makeDeliveredMaps.C`.
 
-| map | base | extent | tilt | use |
-|-----|:----:|:------:|:----:|-----|
-| *(no file — OPERA + `magfield_rescale = 1.0091`)* | OPERA | full cube | — | scale-only match |
-| `sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root` | OPERA | full cube | yes | r > 90 cm / full coverage |
-| `sphenix_solenoid_measured_smoothed_2022-12-02.root` | measured | r ≤ 90 cm | yes | **default** |
+| map | base | extent | tilt | note |
+|-----|:----:|:------:|:----:|------|
+| *(no file — OPERA + `magfield_rescale = 1.0091`)* | OPERA | full cube | — | amplitude match only |
+| `sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root` | OPERA | full cube | yes | defined everywhere |
+| `sphenix_solenoid_measured_smoothed_2022-12-02.root` | measured | r ≤ 90 cm | yes | the actual measurement |
+
+Which to register for production is a tracking-group decision: the two files agree
+to ~0.84 mT in the tracking volume and differ only in coverage beyond r = 90 cm
+(OPERA-filled vs. zero) and in provenance — and, pending the survey, whether the
+4.4 mrad yaw should be applied at all (see [Systematics](#systematics-is-the-4-mrad-tilt-real)).
 
 - **`opera_matched_to_mapping`** — the OPERA calculation **rescaled ×1.0091 and
   yawed 4.4 mrad** to match the mapping; corrected in the spirit of the
