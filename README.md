@@ -93,7 +93,7 @@ The OPERA map is a `TNtuple` named `fieldmap` with branches `x,y,z` (cm) and
 │   ├── findCenterOpera.C     # OPERA magnetic centre (same estimators as findCenter.C)
 │   └── checkTilt.C           # azimuthal m=1 tilt signature from the raw CSVs
 ├── export/
-│   └── makeMeasuredCartesianMap.C  # PHField3DCartesian drop-in ROOT file for reco
+│   └── makeDeliveredMaps.C  # the two PHField3DCartesian drop-in maps for reco
 ├── plots/                    # generated PDFs/PNGs (committed)
 └── data/, output/            # git-ignored (inputs / large derived ROOT files)
 ```
@@ -118,7 +118,7 @@ root -l -b -q 'comparison/compareTiltedOpera.C+("data","data/sphenix3dmapxyz.roo
 root -l -b -q 'comparison/findCenterOpera.C+("data/sphenix3dmapxyz.root")'  # console only
 
 # Drop-in Cartesian map for sPHENIX reconstruction
-root -l -b -q 'export/makeMeasuredCartesianMap.C+'      # -> output/sphenix_measured_fieldmap_cartesian.root
+root -l -b -q 'export/makeDeliveredMaps.C+'             # -> output/sphenix_solenoid_{opera_matched_to_mapping,measured_smoothed}_2022-12-02.root
 ```
 
 Every plot in `plots/` is reproduced by re-running the macro listed above; the
@@ -406,21 +406,13 @@ reproduces it exactly.
 likely home is the measurement chain. The magnet-yaws-east interpretation can be
 neither confirmed nor excluded from the map alone; the survey is required.
 
-### Drop-in replacement for reconstruction
+### Maps for reconstruction
 
-`export/makeMeasuredCartesianMap.C` writes
-`output/sphenix_measured_fieldmap_cartesian.root` — a `TNtuple` (`x:y:z:bx:by:bz:hz`,
-cm/T) on the 111³ grid (±110 cm, 2 cm steps) used by `PHField3DCartesian`.
-Points with r > 900 mm (cube corners, outside the measurement) are set to zero.
-It is a drop-in replacement for the OPERA map: pointing `PHField3DCartesian` at
-this file (with the default `magfield_rescale = 1.0`) delivers the measured field
-to the tracking framework.
-
-A prebuilt copy (111³, Bz(0,0,0) = 1.397 T) is on SDCC:
-
-```
-/sphenix/data/data02/sphenix/MagnetMapping/cern_2022-12-02/sphenix_measured_fieldmap_cartesian.root
-```
+`export/makeDeliveredMaps.C` writes the two drop-in maps described in
+[Maps delivered to tracking](#maps-delivered-to-tracking) — both `TNtuple`
+(`x:y:z:bx:by:bz:hz`, cm/T) on the production 111³ grid (±110 cm, 2 cm steps)
+used by `PHField3DCartesian`, carrying the measured +0.9 % amplitude and the
+4.4 mrad horizontal yaw.
 
 ## Summary
 
@@ -441,6 +433,36 @@ A prebuilt copy (111³, Bz(0,0,0) = 1.397 T) is on SDCC:
 >   alignment question for the cryostat survey. The map alone cannot say whether it
 >   is the magnet, the mapping fixture, or the registration that is rotated
 >   (see [Systematics](#systematics-is-the-4-mrad-tilt-real)).
+
+## Maps delivered to tracking
+
+Three things a reconstruction user can use, all on the production 111³ / ±110 cm
+`PHField3DCartesian` grid (`x:y:z:bx:by:bz:hz`, cm/T). Both files carry the two
+measured corrections — a **+0.9 % amplitude scale** and a **4.4 mrad horizontal
+yaw** (toward −x; θ_y ≈ 0, so the magnet is treated as level). Built by
+`export/makeDeliveredMaps.C`.
+
+| name | what it is | base | extent | tilt |
+|------|------------|------|--------|------|
+| *(no file — use existing OPERA + `magfield_rescale = 1.0091`)* | OPERA at the measured amplitude only | OPERA | full cube | none |
+| `sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root` | **OPERA scaled ×1.0091 and yawed 4.4 mrad to match the mapping** — a calculated map corrected in the spirit of the measurement (**not** a measured map) | OPERA tracking map | **full cube** (defined everywhere) | yes |
+| `sphenix_solenoid_measured_smoothed_2022-12-02.root` | **The measured field** — the φ-averaged, ∇·B-enforced (r,z) reconstruction (real amplitude and z-profile, ~10 mT per-point transverse noise removed) with the measured 4.4 mrad yaw reinserted | measurement | **r ≤ 90 cm** (zero in the corners, where there is no measurement) | yes |
+
+Notes:
+
+- The two files agree to **~0.84 mT** in the tracking volume (that near-identity is
+  the [validation result](#comparison-with-opera)); they differ in *provenance* and
+  in how the unmeasured r > 90 cm corners are treated (OPERA fills them vs. zero).
+- The **measured map deliberately omits nothing it measured but keeps no noise**:
+  it is the measurement smoothed, *with* its tilt. It is **not** the raw point
+  cloud (whose ~10 mT transverse scatter is measurement noise, not field).
+- The tilt is applied as a rigid yaw. If the cryostat survey later shows the
+  4.4 mrad is a measurement-frame artifact rather than a real magnet yaw, the
+  yaw should be dropped (rebuild with `THETA_X = 0`); the map alone cannot decide
+  this (see [Systematics](#systematics-is-the-4-mrad-tilt-real)).
+
+This supersedes the earlier `sphenix_measured_fieldmap_cartesian.root` (which was
+axisymmetric — no tilt — and cut off at r = 90 cm); that file is retired.
 
 ## Plots
 
