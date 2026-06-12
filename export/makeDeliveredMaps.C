@@ -24,12 +24,20 @@
 //   sample at  r_src = (x - tx*z, y - ty*z, z + tx*x + ty*y)
 //   rotate     Bx'=bx+tx*bz, By'=by+ty*bz, Bz'=bz-tx*bx-ty*by
 //
-// The scale-only case (OPERA at the measured amplitude, no yaw) is NOT a file:
-// run the existing OPERA tracking map with PHField3DCartesian's
-// magfield_rescale = 1.0091.
+// The yaw, amplitude scale and vertical tilt are ARGUMENTS, so the same code
+// produces the menu of maps that bracket the (degenerate) tilt systematic:
 //
-// Run from the project directory:
-//   root -l -b -q 'export/makeDeliveredMaps.C+'
+//   root -l -b -q 'export/makeDeliveredMaps.C+(-4.40)'  # raw apparent yaw (now disfavoured)
+//   root -l -b -q 'export/makeDeliveredMaps.C+(-2.20)'  # field-proportional yaw (half-field analysis)
+//   root -l -b -q 'export/makeDeliveredMaps.C+(0.0)'    # no tilt (amplitude scale only)
+//
+// Signature: makeDeliveredMaps(yawMrad=-4.40, scale=1.0091, thetaYmrad=0.0, tag="").
+// Output filenames carry a yaw tag (default "yaw<|yawMrad|>mrad") so the variants
+// coexist; the yaw=0 map replaces the old "run OPERA with magfield_rescale"
+// recipe with an explicit scale-only file.  Defaults reproduce the original
+// 4.4 mrad / +0.9 % corrections.
+//
+// Run from the project directory.
 
 #include "../sPHENIXFieldMap.cxx"
 #include "../comparison/OperaMap.h"
@@ -37,15 +45,19 @@
 #include "TFile.h"
 #include "TNtuple.h"
 #include "TSystem.h"
+#include "TString.h"
 
 #include <cmath>
 #include <cstdio>
 #include <string>
 
-// ── Physical corrections from the 2022-12-02 mapping ─────────────────────────
-static const double SCALE   = 1.0091;      // +0.9 % amplitude (best-fit, == Bz(0,0,0) ratio)
-static const double THETA_X = -4.40e-3;    // 4.4 mrad horizontal yaw toward -x ("east")
-static const double THETA_Y =  0.0;        // magnet level (theta_y ~ 0): no vertical tilt applied
+// ── Default physical corrections from the 2022-12-02 mapping (all overridable) ─
+//   scale   1.0091 : +0.9 % amplitude (best-fit, == Bz(0,0,0) ratio)
+//   yawMrad -4.40  : horizontal yaw toward -x ("east").  The half-field analysis
+//                    splits this into ~2.2 mrad field-proportional + a ~1.4 mT
+//                    current-independent offset, so -2.20 and 0.0 are the other
+//                    defensible choices (see README half-field / global sections).
+//   thetaY   0.0   : magnet level (theta_y ~ 0): no vertical tilt applied
 
 // ── Output grid (production PHField3DCartesian grid) ─────────────────────────
 static const int   N     = 111;            // nodes/axis
@@ -54,11 +66,13 @@ static const float GMAX  =  110.f;         // cm
 static const float DG    =    2.f;         // cm/step
 static const float CM2MM =   10.f;
 
-static inline void rotPos(double x,double y,double z,double&xs,double&ys,double&zs){
-    xs = x - THETA_X*z;  ys = y - THETA_Y*z;  zs = z + THETA_X*x + THETA_Y*y;
+static inline void rotPos(double x,double y,double z,double tx,double ty,
+                          double&xs,double&ys,double&zs){
+    xs = x - tx*z;  ys = y - ty*z;  zs = z + tx*x + ty*y;
 }
-static inline void rotVec(double bx,double by,double bz,double&Bx,double&By,double&Bz){
-    Bx = bx + THETA_X*bz;  By = by + THETA_Y*bz;  Bz = bz - THETA_X*bx - THETA_Y*by;
+static inline void rotVec(double bx,double by,double bz,double tx,double ty,
+                          double&Bx,double&By,double&Bz){
+    Bx = bx + tx*bz;  By = by + ty*bz;  Bz = bz - tx*bx - ty*by;
 }
 static inline double clampg(double v){ return v<GMIN?GMIN:(v>GMAX?GMAX:v); }
 
@@ -86,8 +100,38 @@ static void writeMap(const char* outFile, const char* title, F sample)
            outFile, N*N*N, bz0, nZero);
 }
 
-void makeDeliveredMaps()
+// The three delivered cases that bracket the (degenerate) tilt systematic.
+// All share the +0.9 % amplitude; they differ only in the applied yaw:
+//
+//   case          yawMrad   meaning
+//   ------------  -------   ---------------------------------------------------
+//   no-tilt          0.0    amplitude scale only; consistent with the survey
+//                           (~0.17 mrad) and with the tilt being a measurement
+//                           systematic.  Lower bound of the menu.
+//   field-prop      -2.20   the field-PROPORTIONAL yaw from the half-field
+//                           analysis (slope of <B_perp> vs Bz), with the
+//                           ~1.4 mT current-independent offset removed.  Best
+//                           single estimate if a real rotation is assumed.
+//   raw apparent    -4.40   the full-field apparent yaw (<B_perp>/Bz).  Now
+//                           disfavoured: ~1 mrad of it is the additive offset,
+//                           and the remainder still exceeds the survey.
+//
+// Direction: yaw is toward -x ("east"), theta_y ~ 0 (magnet level).  See the
+// README "half-field" and "global" sections for the decomposition and errors.
+
+void makeDeliveredMaps(double yawMrad = -4.40, double scale = 1.0091,
+                       double thetaYmrad = 0.0, const char* tag = "")
 {
+    const double THETA_X = yawMrad    * 1e-3;
+    const double THETA_Y = thetaYmrad * 1e-3;
+    const double SCALE   = scale;
+    const std::string sfx = (tag && tag[0]) ? std::string(tag)
+                                            : Form("yaw%.1fmrad", std::fabs(yawMrad));
+    const std::string fOpera =
+        Form("output/sphenix_solenoid_opera_matched_to_mapping_2022-12-02_%s.root", sfx.c_str());
+    const std::string fMeas =
+        Form("output/sphenix_solenoid_measured_smoothed_2022-12-02_%s.root", sfx.c_str());
+
     const char *FINE  = "data/pointCloudFineFullField.csv";
     const char *ROUGH = "data/pointCloudRoughFullField.csv";
     const char *OPERA = "data/sphenix3dtrackingmapxyz.root";   // 111^3, +-110 cm
@@ -97,49 +141,54 @@ void makeDeliveredMaps()
 
     printf("=== Loading OPERA tracking map ===\n");
     OperaMap op;
-    if (!op.load(OPERA)) { printf("  cannot load %s; abort.\n", OPERA); return; }
+    const bool haveOpera = op.load(OPERA);
+    if (!haveOpera)
+        printf("  WARNING: cannot load %s; skipping the opera_matched map.\n", OPERA);
 
-    printf("=== Corrections applied to both: scale=%.4f, yaw theta_x=%.2f mrad, theta_y=%.2f mrad ===\n",
-           SCALE, THETA_X*1e3, THETA_Y*1e3);
+    printf("=== Corrections: scale=%.4f, yaw theta_x=%.2f mrad, theta_y=%.2f mrad  [tag %s] ===\n",
+           SCALE, THETA_X*1e3, THETA_Y*1e3, sfx.c_str());
 
     // (2) OPERA matched to the mapping: SCALE * R . B_opera(R^{-1} r).
     //     Sample position clamped to the grid edge so the full cube is defined.
-    printf("\n=== (2) sphenix_solenoid_opera_matched_to_mapping_2022-12-02 ===\n");
-    writeMap("output/sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root",
-             "sPHENIX solenoid: OPERA scaled+yawed to the 2022-12-02 mapping (Cartesian, cm/T)",
-             [&](double x,double y,double z,double&Bx,double&By,double&Bz){
-                 double xs,ys,zs; rotPos(x,y,z,xs,ys,zs);
-                 double bx,by,bz; op.get(clampg(xs),clampg(ys),clampg(zs),bx,by,bz);
-                 rotVec(bx,by,bz,Bx,By,Bz);
-                 Bx*=SCALE; By*=SCALE; Bz*=SCALE;
-             });
+    if (haveOpera) {
+        printf("\n=== (2) opera_matched_to_mapping  [%s] ===\n", sfx.c_str());
+        writeMap(fOpera.c_str(),
+                 "sPHENIX solenoid: OPERA scaled+yawed to the 2022-12-02 mapping (Cartesian, cm/T)",
+                 [&](double x,double y,double z,double&Bx,double&By,double&Bz){
+                     double xs,ys,zs; rotPos(x,y,z,THETA_X,THETA_Y,xs,ys,zs);
+                     double bx,by,bz; op.get(clampg(xs),clampg(ys),clampg(zs),bx,by,bz);
+                     rotVec(bx,by,bz,THETA_X,THETA_Y,Bx,By,Bz);
+                     Bx*=SCALE; By*=SCALE; Bz*=SCALE;
+                 });
+    }
 
     // (3) measured, smoothed: R . B_meas(R^{-1} r).  GetFieldXYZ returns 0 for
     //     r>900 mm, so the map is honestly cut off beyond the measured coverage.
-    printf("\n=== (3) sphenix_solenoid_measured_smoothed_2022-12-02 ===\n");
-    writeMap("output/sphenix_solenoid_measured_smoothed_2022-12-02.root",
+    printf("\n=== (3) measured_smoothed  [%s] ===\n", sfx.c_str());
+    writeMap(fMeas.c_str(),
              "sPHENIX solenoid: measured field, smoothed + measured yaw (Cartesian, cm/T)",
              [&](double x,double y,double z,double&Bx,double&By,double&Bz){
-                 double xs,ys,zs; rotPos(x,y,z,xs,ys,zs);
+                 double xs,ys,zs; rotPos(x,y,z,THETA_X,THETA_Y,xs,ys,zs);
                  double bx,by,bz; meas.GetFieldXYZ(xs*CM2MM,ys*CM2MM,zs*CM2MM,bx,by,bz);
-                 rotVec(bx,by,bz,Bx,By,Bz);
+                 rotVec(bx,by,bz,THETA_X,THETA_Y,Bx,By,Bz);
              });
 
     // ── Verification: <Bx> on the |z|<=40 cm, r<=40 cm core should show the yaw ─
-    //    (phi-average of Bx ~ theta_x*Bz ~ -6 mT for both maps).
+    //    (phi-average of Bx ~ theta_x*Bz for both maps).
     printf("\n=== Verification: <Bx> over the r<=40 cm, |z|<=40 cm core (expect ~ %.1f mT) ===\n",
            THETA_X*1.4*1e3);
-    auto coreBx=[&](const char* p){
-        TFile*f=TFile::Open(p); TNtuple*nt=(TNtuple*)f->Get("fieldmap");
+    auto coreBx=[&](const std::string& p){
+        TFile*f=TFile::Open(p.c_str()); if(!f||f->IsZombie()) return;
+        TNtuple*nt=(TNtuple*)f->Get("fieldmap");
         float x,y,z,bx; nt->SetBranchAddress("x",&x); nt->SetBranchAddress("y",&y);
         nt->SetBranchAddress("z",&z); nt->SetBranchAddress("bx",&bx);
         double s=0; long n=0;
         for (Long64_t i=0;i<nt->GetEntries();++i){ nt->GetEntry(i);
             if (x*x+y*y<=40*40 && std::abs(z)<=40 && (x!=0||y!=0)){ s+=bx; ++n; } }
-        printf("  %-58s <Bx> = %+5.2f mT\n", gSystem->BaseName(p), n? s/n*1e3:0.);
+        printf("  %-72s <Bx> = %+5.2f mT\n", gSystem->BaseName(p.c_str()), n? s/n*1e3:0.);
         f->Close();
     };
-    coreBx("output/sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root");
-    coreBx("output/sphenix_solenoid_measured_smoothed_2022-12-02.root");
+    if (haveOpera) coreBx(fOpera);
+    coreBx(fMeas);
     printf("\nDone.\n");
 }

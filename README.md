@@ -155,7 +155,7 @@ and Br derived from ∇·B = 0.
 | Peak on-axis Bz              | 1.3975 T |
 | Magnetic centre (Br zero crossing) | **z ≈ +26 mm** |
 | ∇·B residual (RMS / \|max\|) | 2.7 × 10⁻⁶ / 2.0 × 10⁻⁵ T/mm |
-| Solenoid tilt \|θ\|          | ≈ 4.0–4.7 mrad toward −x (azimuth ≈ 176°); see [tilt cross-checks](#cross-checks-three-independent-tilt-estimators) |
+| Solenoid tilt \|θ\|          | ≈ 4.0–4.7 mrad toward −x (azimuth ≈ 176°) **apparent at full field** — the [half-field cross-check](#half-field-cross-check-a-second-excitation) splits this into ~2.2 mrad field-proportional + a ~1.4 mT current-independent offset (survey ≈ 0.17 mrad); see [tilt cross-checks](#cross-checks-three-independent-tilt-estimators) and [Global synthesis](#global-synthesis) |
 
 ### Comparison with OPERA
 
@@ -416,80 +416,194 @@ reproduces it exactly.
 likely home is the measurement chain. The magnet-yaws-east interpretation can be
 neither confirmed nor excluded from the map alone; the survey is required.
 
+### Half-field cross-check: a second excitation
+
+The full-field fine and rough scans cannot test the tilt (they share the same
+setup and frame yaw — see the Note above). The one lever they lack is a
+**different excitation**, and the 2022-12-02 campaign recorded one: a **half-field**
+rough map (`pointCloudRoughHalfField.csv`) on the *identical* 10 cm / 10° grid as
+the full-field rough map — same probe, mapper and registration, only the current
+changed (plateau ratio verified **0.500**). `analysis/checkHalfField.C` runs the
+comparison; the full-field analysis is untouched.
+
+**Why a second excitation is decisive in principle.** A genuine rigid tilt is a
+rotation `B_meas = R·B_true`, so the transverse leakage is *exactly* proportional
+to Bz and the angle θ = ⟨B⊥⟩/Bz is the **same at any current**. Anything whose
+transverse field does **not** scale with Bz is, by definition, not a rigid tilt.
+
+Three observations, all consistent:
+
+1. **The apparent tilt is not invariant.** The global φ-averaged angle **grows**
+   from **3.09 mrad at full field to 4.14 mrad at half field**, and ⟨B⊥⟩ falls
+   only to **0.67** of its full-field value — not the **0.50** a pure rotation
+   requires. (The axis-line fit agrees: θ_x −3.48 → −4.62 mrad.)
+2. **The magnetic centre does not move.** Between the two excitations the
+   transverse axis (x₀, y₀) shifts by (+0.5, −0.4) mm — within the ~1 mm fit
+   error — and the axial centre by **0.2 mm**. An additive transverse offset
+   biases the *fitted tilt* (it projects onto the ∝Bz term) but not the
+   focusing-derived centre, so a **growing angle with a stationary centre** is its
+   fingerprint.
+3. **A through-zero fit separates the two pieces.** Pooling the flat-field slices
+   (|z| < 700 mm, where the focusing term vanishes) from both excitations gives a
+   clean line that **misses the origin**:
+
+   - ⟨Bx⟩ = (**−2.14 ± 0.05 mrad**)·Bz + (**−1.39 ± 0.05 mT**)
+   - ⟨By⟩ = (**−0.65 ± 0.07 mrad**)·Bz + (**+0.28 ± 0.07 mT**)
+
+   The slope is a **field-proportional yaw of 2.24 mrad** (φ ≈ −163°); the
+   intercept is a **current-independent transverse offset of 1.42 mT** (φ ≈ +169°),
+   **nonzero at 26σ**. The 0.09 mT residual rms shows the linear model is excellent
+   (no curvature → no significant iron-saturation nonlinearity).
+
+![Half-field through-zero fit](plots/halffield_BperpVsBz.png)
+
+**What it establishes.** The full-field "≈4 mrad tilt" is the sum of two physically
+distinct things: a **field-proportional yaw of ~2.2 mrad** and a
+**current-independent ~1.4 mT transverse offset** that the full-field map alone
+reported as extra tilt. This **revises** the earlier "external/ambient field
+disfavoured" entry in the candidate table — that was inferred from the
+z-flatness of θ *within one excitation*; the half-field map measures the
+current-independent term directly and finds it nonzero. Such a term is most
+naturally a **transverse Hall-probe pedestal** (a zero offset); it cannot be
+distinguished from a real remanent/ambient ~1.4 mT field by the map alone — a
+**magnet-off / zero-field probe reading**, which this campaign did **not** take,
+is what would settle it. **What it does not do:** the 2.24 mrad slope still mixes a
+real magnet/frame rotation with any ∝Bz probe cross-talk, so even that residual is
+an upper bound on a physical yaw.
+
+### Global synthesis
+
+Combining the full-field estimators, the half-field decomposition and the survey,
+the transverse-field "tilt" resolves into three layers of very different status:
+
+| component | size | nature | scales as |
+|-----------|------|--------|:---------:|
+| current-independent offset | ~1.4 mT (~1.0 mrad-equiv at full field) | probe pedestal, or remanent/ambient field | constant |
+| field-proportional yaw | 2.24 ± 0.05 mrad | rigid rotation **and/or** ∝Bz probe cross-talk | ∝ Bz |
+| real magnet yaw (survey) | ≈ 0.17 mrad | mechanical alignment | geometric |
+
+Read top-to-bottom these are successive subtractions: raw apparent ~4 mrad →
+remove the offset → **2.24 mrad** field-proportional → remove cross-talk (size
+unknown) → the survey's **~0.17 mrad**. So the honest statement is:
+
+> **The measured field shows a ~4 mrad apparent transverse tilt at full
+> excitation, of which only ~2.2 mrad scales as a rotation and the rest is a
+> current-independent ~1.4 mT offset (most likely a probe pedestal). Whether even
+> the 2.2 mrad is a real magnet yaw or further measurement systematic cannot be
+> decided from the maps; the cryostat survey (~0.17 mrad) is the external check.**
+
+**On the errors.** The per-method dispersion errors quoted above (±0.08–0.46 mrad)
+measure only how reproducibly each estimator pins the angle *on one map*; they are
+structurally blind to the common-mode systematics that dominate. The half-field
+result makes that concrete — the *same magnet* read 3.1 vs 4.1 mrad just by halving
+the current. The realistic uncertainty on any "magnet tilt" is therefore **of order
+the value itself**, not the printed ±.
+
+**Consequence for the delivered map.** Because the maps cannot collapse this to one
+number, the delivery is a **menu over the yaw**, all sharing the +0.9 % amplitude
+(built by `export/makeDeliveredMaps.C+(yawMrad)`; file-level details and md5s in
+[`export/MANIFEST_fieldmaps.txt`](export/MANIFEST_fieldmaps.txt)):
+
+| yaw | rationale |
+|----:|-----------|
+| **0.0 mrad** | no-tilt / scale-only — consistent with the survey and with the apparent tilt being a measurement systematic |
+| **2.2 mrad** | field-proportional yaw, pedestal removed — best single estimate **if** a real rotation is assumed (an upper bound) |
+| **4.4 mrad** | raw apparent yaw — **disfavoured**; ~1 mrad of it is the additive offset, and the remainder still exceeds the survey |
+
+The **0.0 and 2.2 mrad maps bracket the defensible range**; 4.4 mrad is retained
+only for continuity with the earlier single-yaw delivery. A survey would collapse
+the menu to one.
+
 ### Maps for reconstruction
 
-`export/makeDeliveredMaps.C` writes the two drop-in maps described in
-[Maps delivered to tracking](#maps-delivered-to-tracking) — both `TNtuple`
+`export/makeDeliveredMaps.C+(yawMrad)` writes the drop-in maps described in
+[Maps delivered to tracking](#maps-delivered-to-tracking) — all `TNtuple`
 (`x:y:z:bx:by:bz:hz`, cm/T) on the production 111³ grid (±110 cm, 2 cm steps)
-used by `PHField3DCartesian`, carrying the measured +0.9 % amplitude and the
-4.4 mrad horizontal yaw. The deployment note that ships alongside the maps is
-[`export/MANIFEST_fieldmaps.txt`](export/MANIFEST_fieldmaps.txt) (md5s, the
-scale-only option, and the flag that the currently-deployed CDB map is z-shifted
-— centre at z ≈ −240 mm — and must be replaced).
+used by `PHField3DCartesian`, carrying the measured +0.9 % amplitude and a chosen
+horizontal yaw. Run it once per yaw to produce the menu (0.0, 2.2, 4.4 mrad); the
+default reproduces the original 4.4 mrad maps exactly. The deployment note that
+ships alongside the maps is
+[`export/MANIFEST_fieldmaps.txt`](export/MANIFEST_fieldmaps.txt) (the six md5s, the
+yaw menu, and the flag that the currently-deployed CDB map is z-shifted — centre at
+z ≈ −240 mm — and must be replaced).
 
 ## Summary
 
 > ### The measured 2022-12-02 field validates the OPERA map used in reconstruction.
 >
-> After a single uniform **0.9 % normalization** and a single **4.4 mrad rigid
-> rotation**, the measured **Bz** reproduces the OPERA calculation to
-> **0.84 mT RMS** point-by-point across the tracking volume — **better than one
-> part in a thousand**, with no z-offset and no shape disagreement
-> (see [Comparison with OPERA](#comparison-with-opera)).
+> After a single uniform **0.9 % normalization**, the measured **Bz** reproduces
+> the OPERA calculation to **0.84 mT RMS** point-by-point across the tracking
+> volume — **better than one part in a thousand**, with no z-offset and no shape
+> disagreement (see [Comparison with OPERA](#comparison-with-opera)). A few-mrad
+> transverse yaw changes Bz only at the µT level, so this validation is independent
+> of the tilt question.
 >
-> The only two physical differences are therefore **one calibration number** and
-> **one alignment angle**:
+> The physical differences are therefore **one calibration number** and **one
+> alignment question**:
 >
 > - **~0.9 % scale** — the measured field is ~0.9 % above OPERA; a probe-calibration
 >   question for the CERN mapping group.
-> - **~4.4 mrad rotation** — between the measured field and the nominal frame; an
->   alignment question for the cryostat survey. The map alone cannot say whether it
->   is the magnet, the mapping fixture, or the registration that is rotated
->   (see [Systematics](#systematics-is-the-4-mrad-tilt-real)).
+> - **a transverse tilt** — a ~4 mrad apparent yaw at full field, which the
+>   [half-field cross-check](#half-field-cross-check-a-second-excitation) resolves
+>   into a **~2.2 mrad field-proportional** part plus a **current-independent
+>   ~1.4 mT offset** (most likely a probe pedestal); the survey says ~0.17 mrad. The
+>   delivered maps therefore span a **yaw menu (0 / 2.2 / 4.4 mrad)** rather than a
+>   single angle (see [Global synthesis](#global-synthesis)).
 
 ## Maps delivered to tracking
 
-Three things a reconstruction user can use, all on the production 111³ / ±110 cm
-`PHField3DCartesian` grid (`x:y:z:bx:by:bz:hz`, cm/T). Both files carry the two
-measured corrections — a **+0.9 % amplitude scale** and a **4.4 mrad horizontal
-yaw** (toward −x; θ_y ≈ 0, so the magnet is treated as level). Built by
-`export/makeDeliveredMaps.C`.
+All delivered maps are on the production 111³ / ±110 cm `PHField3DCartesian` grid
+(`x:y:z:bx:by:bz:hz`, cm/T) and carry the **+0.9 % amplitude scale** (θ_y ≈ 0
+throughout, so the magnet is treated as level). They come in two **provenance
+variants** × the three-point **yaw menu**, built by
+`export/makeDeliveredMaps.C+(yawMrad)`. File-level details and md5s are in
+[`export/MANIFEST_fieldmaps.txt`](export/MANIFEST_fieldmaps.txt).
 
-| map | base | extent | tilt | note |
-|-----|:----:|:------:|:----:|------|
-| *(no file — OPERA + `magfield_rescale = 1.0091`)* | OPERA | full cube | — | amplitude match only |
-| `sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root` | OPERA | full cube | yes | defined everywhere |
-| `sphenix_solenoid_measured_smoothed_2022-12-02.root` | measured | r ≤ 90 cm | yes | the actual measurement |
+**Provenance variant** — pick by coverage need:
 
-Which to register for production is a tracking-group decision: the two files agree
-to ~0.84 mT in the tracking volume and differ only in coverage beyond r = 90 cm
-(OPERA-filled vs. zero) and in provenance — and, pending the survey, whether the
-4.4 mrad yaw should be applied at all (see [Systematics](#systematics-is-the-4-mrad-tilt-real)).
-
-- **`opera_matched_to_mapping`** — the OPERA calculation **rescaled ×1.0091 and
-  yawed 4.4 mrad** to match the mapping; corrected in the spirit of the
-  measurement, **not** a measured map. Defined everywhere in the cube.
+- **`opera_matched_to_mapping`** — the OPERA calculation **rescaled ×1.0091** and
+  yawed to match the mapping; corrected in the spirit of the measurement, **not** a
+  measured map. **Defined everywhere** in the cube — use it for anything sampling
+  r > 90 cm (field integrals, swimming to calorimeter, TPC outer edge).
 - **`measured_smoothed`** — the **measured** field: the φ-averaged, ∇·B-enforced
   (r,z) reconstruction (real amplitude and z-profile, ~10 mT per-point transverse
-  noise removed) with the measured 4.4 mrad yaw reinserted. Zero beyond r = 90 cm.
-- **scale-only** — the bare OPERA tracking map run at `magfield_rescale = 1.0091`
-  (no new file needed).
+  noise removed) with the yaw reinserted as a rigid rotation. **Zero beyond
+  r = 90 cm**, where there is no measurement.
+
+The two agree to **~0.84 mT** in the tracking volume at a given yaw (that
+near-identity is the [validation result](#comparison-with-opera)); they differ only
+in provenance and in how the unmeasured r > 90 cm corners are treated (OPERA-filled
+vs. zero).
+
+**Yaw menu** — each value is delivered as *both* provenance variants, named
+`sphenix_solenoid_{opera_matched_to_mapping,measured_smoothed}_2022-12-02_yawX.Xmrad.root`
+(see [Global synthesis](#global-synthesis) for why a menu):
+
+| yaw | file suffix | rationale |
+|----:|-------------|-----------|
+| 0.0 mrad | `_yaw0.0mrad` | no-tilt / scale-only — the bare amplitude match; consistent with the survey |
+| 2.2 mrad | `_yaw2.2mrad` | field-proportional yaw, pedestal removed — best single estimate **if** a real rotation is assumed |
+| 4.4 mrad | `_yaw4.4mrad` | raw apparent yaw — **disfavoured** (~1 mrad is the additive offset); kept for continuity |
+
+Which to register for production is a tracking-group decision. The **0.0 and
+2.2 mrad maps bracket the defensible range**; 4.4 mrad is retained only for
+continuity with the earlier single-yaw delivery.
 
 Notes:
 
-- The two files agree to **~0.84 mT** in the tracking volume (that near-identity is
-  the [validation result](#comparison-with-opera)); they differ in *provenance* and
-  in how the unmeasured r > 90 cm corners are treated (OPERA fills them vs. zero).
+- All six carry the +0.9 % scale baked in, so run them with **`magfield_rescale =
+  1.0`**. (The yaw-0.0 `opera_matched` map *is* the old "scale-only" recipe — bare
+  OPERA ×1.0091 — now shipped as a file.)
 - The **measured map deliberately omits nothing it measured but keeps no noise**:
-  it is the measurement smoothed, *with* its tilt. It is **not** the raw point
-  cloud (whose ~10 mT transverse scatter is measurement noise, not field).
-- The tilt is applied as a rigid yaw. If the cryostat survey later shows the
-  4.4 mrad is a measurement-frame artifact rather than a real magnet yaw, the
-  yaw should be dropped (rebuild with `THETA_X = 0`); the map alone cannot decide
-  this (see [Systematics](#systematics-is-the-4-mrad-tilt-real)).
+  it is the measurement smoothed, *with* its yaw. It is **not** the raw point cloud
+  (whose ~10 mT transverse scatter is measurement noise, not field).
+- The yaw is applied as a rigid rotation; rebuilding any case is one command. A
+  magnet-off/zero-field probe reading or the cryostat survey would collapse the
+  menu to one map (see [Global synthesis](#global-synthesis)).
 
-This supersedes the earlier `sphenix_measured_fieldmap_cartesian.root` (which was
-axisymmetric — no tilt — and cut off at r = 90 cm); that file is retired.
+This supersedes the earlier single-yaw delivery and the axisymmetric
+`sphenix_measured_fieldmap_cartesian.root` (no tilt, cut off at r = 90 cm); both are
+retired.
 
 ## Plots
 
@@ -519,6 +633,17 @@ OPERA — a uniform ΔBx ≈ −6 mT (left, = the difference it removes) and onl
 sub-few-mT, antisymmetric-in-x ΔBz in the fringe corners (right). The ~0.9 %
 (~12.7 mT) Bz scale offset is rotation-invariant and is left untouched, so after the
 yaw the residual is just that scale offset plus sub-mT fringe structure.*
+
+### Half-field cross-check (tilt vs excitation)
+![Half-field tilt and transverse field vs z](plots/halffield_tilt.png)
+
+*`analysis/checkHalfField.C` overlays the full- (blue) and half-field (red)
+campaigns. Left: θ_x(z); right: ⟨|B⊥|⟩(z). A rigid tilt would give the same θ at
+both excitations and ⟨|B⊥|⟩ scaling by exactly ½; instead θ grows at half field and
+⟨|B⊥|⟩ falls by less than ½ — the signature of a current-independent offset on top
+of the field-proportional yaw. The through-zero fit that separates the two
+(plots/halffield_BperpVsBz.png) is shown in the
+[half-field cross-check](#half-field-cross-check-a-second-excitation) section.*
 
 The `comparison/compareFieldMaps.C` macro additionally writes the numbered series
 `plots/01_…`–`plots/11_…` (on-axis Bz, 2-D maps, ΔBz, Br comparison, m=1

@@ -1,53 +1,86 @@
 sPHENIX solenoid field maps — CERN 2022-12-02 mapping
 =====================================================
-Staged: 2026-06-09 (John Haggerty)
+Staged: 2026-06-12 (John Haggerty)   (supersedes the 2026-06-09 single-yaw set)
 Analysis / provenance: https://github.com/haggerty/sphenix-cern-mapping-2022-12-02
 
-These two maps are for the FIELDMAP_TRACKING CDB domain (where the current
-measured map lives).  Both are TNtuple "fieldmap" (x:y:z:bx:by:bz:hz, cm/T) on
-the production 111^3 / +-110 cm PHField3DCartesian grid — drop-in for the
-existing OPERA tracking map.
+These maps are for the FIELDMAP_TRACKING CDB domain (where the current measured
+map lives).  All are TNtuple "fieldmap" (x:y:z:bx:by:bz:hz, cm/T) on the
+production 111^3 / +-110 cm PHField3DCartesian grid — drop-in for the existing
+OPERA tracking map.
 
-Both carry the two physical results of the 2022-12-02 mapping:
-  - a uniform +0.9 % amplitude scale (Bz(0,0,0) = 1.397 T; OPERA is 1.385 T),
-  - a 4.4 mrad horizontal yaw of the field toward -x ("east"); theta_y ~ 0,
-    i.e. the magnet is treated as level.
+All carry the one robust physical result of the 2022-12-02 mapping:
+  - a uniform +0.9 % amplitude scale (Bz(0,0,0) = 1.397 T; OPERA is 1.385 T).
 
-  >>> magfield_rescale = 1.0 with BOTH of these files. <<<
-  (The +0.9 % is already baked in.  The 1.0091 factor below is ONLY for the
-   bare, uncorrected OPERA map.)
+  >>> magfield_rescale = 1.0 with ALL of these files. <<<
+  (The +0.9 % is already baked in.)
+
+
+WHY THREE YAW CHOICES (a menu, not one answer)
+----------------------------------------------
+The 2022-12-02 map shows an apparent horizontal yaw of the field toward -x
+("east").  The half-field (half-excitation) cross-check shows this apparent yaw
+is NOT a single rigid rotation: a <B_perp> vs Bz fit decomposes it into
+
+   ~2.2 mrad  field-PROPORTIONAL part  (slope; behaves like a real rotation)
+ + ~1.4 mT    current-INDEPENDENT part (intercept; does NOT scale with Bz —
+              most likely a transverse Hall-probe pedestal, possibly remanence/
+              ambient field; indistinguishable from the map alone).
+
+The full-field apparent ~4.4 mrad is the sum of the two at full current.  Since
+the field map alone cannot break the magnet-yaw vs measurement-systematic
+degeneracy (only the cryostat survey can — it says ~0.17 mrad), we ship the
+range and let the tracking group choose:
+
+   yaw = 0.0 mrad  no-tilt / scale-only — consistent with the survey and with
+                   the apparent tilt being a measurement systematic.
+   yaw = 2.2 mrad  field-proportional yaw, pedestal removed — best single
+                   estimate IF a real rotation is assumed (an upper bound; it
+                   still includes any probe cross-talk and exceeds the survey).
+   yaw = 4.4 mrad  raw apparent yaw — DISFAVOURED: ~1 mrad of it is the additive
+                   offset, and the remainder still exceeds the survey.  Provided
+                   for continuity with the earlier delivery only.
+
+theta_y ~ 0 in all cases (magnet treated as level).  Rebuild any case with
+  root -l -b -q 'export/makeDeliveredMaps.C+(<yawMrad>)'   (see that macro's header).
 
 
 FILES
 -----
-Which file to register for production is a tracking-group decision.  The two
-agree to ~0.84 mT in the tracking volume; they differ only in coverage beyond
-r = 90 cm (zero vs. OPERA-filled) and in provenance.  And, pending the survey,
-whether the 4.4 mrad yaw should be applied at all is itself open (see CAVEAT).
+For each yaw there are two variants, differing only in coverage beyond r = 90 cm:
+  measured_smoothed   the MEASURED field — phi-averaged, div.B-enforced (r,z)
+                      reconstruction of the point cloud (real amplitude and
+                      z-profile; ~10 mT per-point transverse noise averaged out),
+                      yaw reinserted as a rigid rotation.  ZERO in the cube
+                      corners (r > 90 cm), where there is no measurement.
+  opera_matched       the OPERA calculation rescaled x1.0091 and yawed to match
+                      the mapping (NOT a measured map).  Defined everywhere in
+                      the cube — use it for anything sampling r > 90 cm (field
+                      integrals, swimming to calorimeter, TPC outer edge).
+The two agree to ~0.84 mT in the tracking volume at a given yaw.
 
-sphenix_solenoid_measured_smoothed_2022-12-02.root      (8.3 MB)
-    The MEASURED field: the phi-averaged, div.B-enforced (r,z) reconstruction
-    of the point cloud (real amplitude and z-profile; the ~10 mT per-point
-    transverse measurement noise is averaged out) with the measured 4.4 mrad
-    yaw reinserted as a rigid rotation.
-    Coverage: r <= 90 cm.  Field is ZERO in the cube corners (r > 90 cm), where
-    there is no measurement.
-    md5 = ee89cad7156467cdc028fa86d84e8a90
+  yaw = 0.0 mrad  (no-tilt / scale-only)
+    sphenix_solenoid_measured_smoothed_2022-12-02_yaw0.0mrad.root          (8.2 MB)
+        md5 = d4831f80cdeb7e307e3cb078dcfd3bad
+    sphenix_solenoid_opera_matched_to_mapping_2022-12-02_yaw0.0mrad.root   (19.3 MB)
+        md5 = efc59d19d49995ddf53e4d6595fbb02f
 
-sphenix_solenoid_opera_matched_to_mapping_2022-12-02.root   (19.2 MB)
-    The OPERA calculation rescaled x1.0091 and yawed 4.4 mrad to match the
-    mapping — i.e. OPERA corrected in the spirit of the measurement.
-    It is NOT a measured map.  Defined everywhere in the cube (no zeros), so it
-    is the option for anything that samples r > 90 cm (field integrals, swimming
-    to calorimeter, TPC outer edge).
-    Agrees with the measured map to ~0.84 mT in the tracking volume.
-    md5 = 574164b77701acb4a635ff58a4086346
+  yaw = 2.2 mrad  (field-proportional, pedestal removed)
+    sphenix_solenoid_measured_smoothed_2022-12-02_yaw2.2mrad.root          (8.3 MB)
+        md5 = de413be5d2d8231941192010e406b728
+    sphenix_solenoid_opera_matched_to_mapping_2022-12-02_yaw2.2mrad.root   (19.2 MB)
+        md5 = 24bf6b364d4da792621e33f23e77f9f2
 
+  yaw = 4.4 mrad  (raw apparent — DISFAVOURED)
+    sphenix_solenoid_measured_smoothed_2022-12-02_yaw4.4mrad.root          (8.3 MB)
+        md5 = 9c165f966a0a18ac4613acb8aa8c5030
+    sphenix_solenoid_opera_matched_to_mapping_2022-12-02_yaw4.4mrad.root   (19.2 MB)
+        md5 = 863d64adac94ca13d89a13cd2c4aef75
 
-SCALE-ONLY OPTION (no file)
----------------------------
-To run the bare OPERA tracking map at the measured amplitude only (no yaw),
-use the existing OPERA map with  magfield_rescale = 1.0091.
+NOTE on the md5s: ROOT stamps every file with a fresh UUID + timestamp, so the
+md5 of a regenerated file differs even when the field VALUES are byte-identical.
+These md5s identify THESE delivered files (integrity in transit); they are not a
+reproducible-build checksum.  (The yaw=4.4 files have the same field contents,
+verified node-by-node, as the 2026-06-09 delivery — only the file md5 differs.)
 
 
 ACTION NEEDED — the CURRENTLY DEPLOYED CDB map is z-shifted
@@ -63,20 +96,22 @@ group.)
 
   >>> Production tracking is running on a field map centered ~265 mm off. <<<
   >>> Please replace it with one of the corrected 2022-12-02 maps above
-  >>> (which one is a tracking-group decision). <<<
+  >>> (which yaw, and measured vs opera, is a tracking-group decision). <<<
 
 (The local file sphenix_measured_fieldmap_cartesian.root, dated 2026-06-05, in
 this folder is a CORRECT-geometry interim build — center +28 mm — but it is
 axisymmetric, has no tilt, and has the unhelpful old name; it was never
-registered.  Both it and the deployed z-shifted map are superseded by the two
+registered.  Both it and the deployed z-shifted map are superseded by the
 2022-12-02 maps above.)
 
 
-CAVEAT (alignment)
-------------------
-The 4.4 mrad yaw is applied as a rigid rotation.  The field map alone cannot
-say whether that rotation is a real magnet yaw or a measurement-frame
-(probe/mapper/registration) systematic — that is what the cryostat survey will
-decide.  If the survey shows it is a measurement artifact, the yaw should be
-dropped (rebuild with THETA_X = 0 in export/makeDeliveredMaps.C).
-See the repo's "Systematics" and "Maps delivered to tracking" sections.
+CAVEAT (alignment) — see also "Half-field analysis" and "Global synthesis" in the repo
+--------------------------------------------------------------------------------------
+The yaw is applied as a rigid rotation.  The field map alone cannot say whether
+the field-proportional part is a real magnet yaw or a measurement-frame
+(probe/mapper/registration/cross-talk) systematic, and the half-field cross-check
+shows a current-independent ~1.4 mT term on top that is almost certainly
+instrumental.  The cryostat survey (which says ~0.17 mrad) is the external check
+that would collapse the menu to one map.  Until then the yaw=0.0 (scale-only) and
+yaw=2.2 (field-proportional) maps bracket the defensible range; yaw=4.4 is kept
+only for continuity and is not recommended.
