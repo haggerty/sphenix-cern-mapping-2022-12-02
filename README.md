@@ -99,7 +99,8 @@ The OPERA map is a `TNtuple` named `fieldmap` with branches `x,y,z` (cm) and
 │   ├── checkFieldMap.C       # Bz(r,z), Br(r,z), ∇·B(r,z), Bz on axis; Maxwell check
 │   ├── findCenter.C          # magnetic centre (Bz peak / Br sign change)
 │   ├── checkAlignment.C      # solenoid-axis tilt vs sPHENIX z (global φ-averaged m=0)
-│   └── estimateTilt.C        # two independent tilt estimators (near-axis + axis-line fit)
+│   ├── estimateTilt.C        # two independent tilt estimators (near-axis + axis-line fit)
+│   └── checkHalfField.C      # half-field cross-check: tilt = field-prop. yaw + offset; centre
 ├── comparison/
 │   ├── OperaMap.h            # shared OPERA loader/interpolator (grid read from ntuple)
 │   ├── compareNewVsOpera.C   # quick overlays measured vs OPERA
@@ -107,7 +108,7 @@ The OPERA map is a `TNtuple` named `fieldmap` with branches `x,y,z` (cm) and
 │   ├── findCenterOpera.C     # OPERA magnetic centre (same estimators as findCenter.C)
 │   └── checkTilt.C           # azimuthal m=1 tilt signature from the raw CSVs
 ├── export/
-│   └── makeDeliveredMaps.C  # the two PHField3DCartesian drop-in maps for reco
+│   └── makeDeliveredMaps.C  # PHField3DCartesian drop-in maps: yaw menu × 2 provenance variants
 ├── plots/                    # generated PDFs/PNGs (committed)
 └── data/, output/            # git-ignored (inputs / large derived ROOT files)
 ```
@@ -132,7 +133,7 @@ root -l -b -q 'comparison/compareTiltedOpera.C+("data","data/sphenix3dmapxyz.roo
 root -l -b -q 'comparison/findCenterOpera.C+("data/sphenix3dmapxyz.root")'  # console only
 
 # Drop-in Cartesian map for sPHENIX reconstruction
-root -l -b -q 'export/makeDeliveredMaps.C+'             # -> output/sphenix_solenoid_{opera_matched_to_mapping,measured_smoothed}_2022-12-02.root
+root -l -b -q 'export/makeDeliveredMaps.C+(-2.20)'      # yaw menu 0.0/-2.20/-4.40; -> output/sphenix_solenoid_{opera_matched_to_mapping,measured_smoothed}_2022-12-02_yawX.Xmrad.root
 ```
 
 Every plot in `plots/` is reproduced by re-running the macro listed above; the
@@ -567,8 +568,10 @@ variants** × the three-point **yaw menu**, built by
   r > 90 cm (field integrals, swimming to calorimeter, TPC outer edge).
 - **`measured_smoothed`** — the **measured** field: the φ-averaged, ∇·B-enforced
   (r,z) reconstruction (real amplitude and z-profile, ~10 mT per-point transverse
-  noise removed) with the yaw reinserted as a rigid rotation. **Zero beyond
-  r = 90 cm**, where there is no measurement.
+  noise removed) with the yaw reinserted as a rigid rotation. **The natural choice
+  inside the tracking volume** — it is the actual measurement, with no OPERA model
+  baked in. **Zero beyond r = 90 cm** (no measurement there; use `opera_matched`
+  for the cube corners).
 
 The two agree to **~0.84 mT** in the tracking volume at a given yaw (that
 near-identity is the [validation result](#comparison-with-opera)); they differ only
