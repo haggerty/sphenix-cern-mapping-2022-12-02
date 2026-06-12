@@ -451,7 +451,9 @@ void checkHalfField(const char* datadir = "data", const char* outdir = "plots")
         TLine* lf=new TLine(0.0,y0,1.5,y1); lf->SetLineColor(kBlack); lf->SetLineWidth(2); lf->Draw();
         TLine* l0=new TLine(0.0,0.0,1.5,0.0); l0->SetLineStyle(3); l0->Draw();
         TMarker* mc=new TMarker(0.0,y0,29); mc->SetMarkerColor(kBlack); mc->SetMarkerSize(1.6); mc->Draw();
-        TLegend* lg=new TLegend(0.45,0.18,0.88,0.36);
+        // data fall in the lower half (<B_perp> grows negative with Bz), so the
+        // legend goes top-right where the plot is empty
+        TLegend* lg=new TLegend(0.58,0.70,0.88,0.88);
         lg->AddEntry(gF,"full field","p"); lg->AddEntry(gH,"half field","p");
         lg->AddEntry(mc,"intercept c (Bz=0)","p"); lg->Draw();
     };
