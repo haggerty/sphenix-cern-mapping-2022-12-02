@@ -40,7 +40,11 @@ delivered map additionally need the OPERA map, which is **not** committed (it
 belongs to [`sphenixoperamaps`](https://github.com/haggerty/sphenixoperamaps) /
 the `FIELDMAP_TRACKING` CDB) — place it at `data/sphenix3dmapxyz.root`
 (±80/±100 cm comparison file) and/or `data/sphenix3dtrackingmapxyz.root` (111³
-production grid).
+production grid). The two maps' grids and sizes, and how to locate the tracking
+map in the CDB (MD5 content hash, CVMFS path, and the global-tag/IOV lookup),
+are documented in [the tracking-field-map section of
+`sphenixoperamaps`](https://github.com/haggerty/sphenixoperamaps#the-tracking-field-map).
+`sphenix3dmapxyz.root` is exactly the central core of the 111³ tracking map.
 
 | File in `download.tar` | Size | Description |
 |------------------------|------|-------------|
