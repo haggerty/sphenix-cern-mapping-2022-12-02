@@ -102,6 +102,7 @@ The OPERA map is a `TNtuple` named `fieldmap` with branches `x,y,z` (cm) and
 │   ├── findCenterOpera.C     # OPERA magnetic centre (same estimators as findCenter.C)
 │   ├── compareTiltedOpera.C  # OPERA yawed by the measured tilt; residual-RMS table
 │   └── checkTilt.C           # azimuthal m=1 tilt signature from the raw CSVs
+├── survey/                   # cryostat survey reports (PDF), see Cryostat survey
 ├── export/
 │   └── makeDeliveredMaps.C  # PHField3DCartesian drop-in maps: yaw menu × 2 provenance variants
 ├── plots/                    # generated PDFs/PNGs (committed)
@@ -519,9 +520,16 @@ magnetic centre (z ≈ +26 mm) lies ~29 mm north of the cryostat centre (z ≈ �
 close to the 28.5 mm design coil offset. Confirming the mapping frame's
 registration would turn this into a check of the map's absolute position.
 
-The survey reports are kept with the survey records
-(`survey_2026-10-15/CRYOSTAT LOCATION 10-7-26.pdf`, with the 2022 reports in its
-`LEGACY/` folder); they are not committed here.
+The two magnet survey reports are committed in [`survey/`](survey/), renamed with
+their survey dates:
+
+| file | original name | content |
+|------|---------------|---------|
+| [`survey/2026-10-07_cryostat_location.pdf`](survey/2026-10-07_cryostat_location.pdf) | `CRYOSTAT LOCATION 10-7-26.pdf` | 2026 cylinder and end-circle fit (mm) |
+| [`survey/2022-08-12_magnet_location.pdf`](survey/2022-08-12_magnet_location.pdf) | `S-Phenix Magnet-LOCATION.pdf` | 2022 roll-in magnet frame with axis matrix (inches, deg) |
+
+The 2022-08-16 report (`S-Phenix_Magnet-8-16-22.pdf`) is not in the repo; its
+numbers above come from the earlier analysis of that report.
 
 ### Global synthesis
 
