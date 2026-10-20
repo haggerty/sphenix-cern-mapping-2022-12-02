@@ -48,18 +48,12 @@ are documented in [the tracking-field-map section of
 
 | File in `download.tar` | Size | Description |
 |------------------------|------|-------------|
-| `pointCloudFineFullField.csv`  | 35.8 MB | full field, 2 cm step, 10° azimuthal (~200 k points) |
-| `pointCloudRoughFullField.csv` |  7.5 MB | full field, 10 cm step, 10° azimuthal (~42 k points) |
-| `pointCloudRoughHalfField.csv` |  7.5 MB | **half** field, 10 cm step, 10° azimuthal (not used here) |
+| `pointCloudFineFullField.csv`  | 35.8 MB | full field, 20 mm step, 10° azimuthal (~200 k points) |
+| `pointCloudRoughFullField.csv` |  7.5 MB | full field, 100 mm step, 10° azimuthal (~42 k points) |
+| `pointCloudRoughHalfField.csv` |  7.5 MB | **half** field, 100 mm step, 10° azimuthal (used only by `checkHalfField.C`) |
 
 On SDCC the tarball and unpacked CSVs are also at
 `/sphenix/data/data02/sphenix/MagnetMapping/cern_2022-12-02/`.
-
-| File in `download.tar` | Size | Description |
-|------------------------|------|-------------|
-| `pointCloudFineFullField.csv`  | 35.8 MB | full field, 2 cm step, 10° azimuthal (~200 k points) |
-| `pointCloudRoughFullField.csv` |  7.5 MB | full field, 10 cm step, 10° azimuthal (~42 k points) |
-| `pointCloudRoughHalfField.csv` |  7.5 MB | **half** field, 10 cm step, 10° azimuthal (not used here) |
 
 **CSV format** (surveyor frame, mm and Tesla):
 
@@ -106,6 +100,7 @@ The OPERA map is a `TNtuple` named `fieldmap` with branches `x,y,z` (cm) and
 │   ├── compareNewVsOpera.C   # quick overlays measured vs OPERA
 │   ├── compareFieldMaps.C    # full m=0/m=1 Fourier comparison + Maxwell residuals
 │   ├── findCenterOpera.C     # OPERA magnetic centre (same estimators as findCenter.C)
+│   ├── compareTiltedOpera.C  # OPERA yawed by the measured tilt; residual-RMS table
 │   └── checkTilt.C           # azimuthal m=1 tilt signature from the raw CSVs
 ├── export/
 │   └── makeDeliveredMaps.C  # PHField3DCartesian drop-in maps: yaw menu × 2 provenance variants
@@ -156,7 +151,7 @@ and Br derived from ∇·B = 0.
 | Peak on-axis Bz              | 1.3975 T |
 | Magnetic centre (Br zero crossing) | **z ≈ +26 mm** |
 | ∇·B residual (RMS / \|max\|) | 2.7 × 10⁻⁶ / 2.0 × 10⁻⁵ T/mm |
-| Solenoid tilt \|θ\|          | ≈ 4.0–4.7 mrad toward −x (azimuth ≈ 176°) **apparent at full field** — the [half-field cross-check](#half-field-cross-check-a-second-excitation) splits this into ~2.2 mrad field-proportional + a ~1.4 mT current-independent offset (survey ≈ 0.17 mrad); see [tilt cross-checks](#cross-checks-three-independent-tilt-estimators) and [Global synthesis](#global-synthesis) |
+| Solenoid tilt \|θ\|          | ≈ 4.0–4.7 mrad toward −x (azimuth ≈ 176°) **apparent at full field** — the [half-field cross-check](#half-field-cross-check-a-second-excitation) splits this into ~2.2 mrad field-proportional + a ~1.4 mT current-independent offset (2022 survey: sub-mrad, opposite sign); see [tilt cross-checks](#cross-checks-three-independent-tilt-estimators) and [Global synthesis](#global-synthesis) |
 
 ### Comparison with OPERA
 
@@ -387,8 +382,11 @@ reproduces it exactly.
 
 **What points toward a measurement systematic rather than a hardware yaw:**
 
-- **The survey says ~0.17 mrad** mechanically (pending the new one) — two orders of
-  magnitude smaller.
+- **The 2022-08-16 survey says the magnet is aligned to sub-mrad** — yaw
+  θx = +0.85 mrad (north end *west*), pitch θy = +0.17 mrad (north end up) — i.e.
+  ~5× smaller than the apparent field tilt and of the **opposite sign**. (It predates
+  the mapping by ~3.5 months, so it constrains the as-installed pose, not provably
+  the as-mapped one.)
 - **It is purely horizontal** (θy ≈ 0). Gravity-driven effects (cryostat/coil sag)
   would appear as a *vertical* pitch, not a horizontal yaw; a horizontal-only
   rotation is more naturally an installation/registration error about the vertical
@@ -481,17 +479,19 @@ the transverse-field "tilt" resolves into three layers of very different status:
 |-----------|------|--------|:---------:|
 | current-independent offset | ~1.4 mT (~1.0 mrad-equiv at full field) | probe pedestal, or remanent/ambient field | constant |
 | field-proportional yaw | 2.24 ± 0.05 mrad | rigid rotation **and/or** ∝Bz probe cross-talk | ∝ Bz |
-| real magnet yaw (survey) | ≈ 0.17 mrad | mechanical alignment | geometric |
+| real magnet yaw (2022-08-16 survey) | θx ≈ +0.85 mrad (west; opposite sign), θy ≈ +0.17 mrad | mechanical alignment | geometric |
 
 Read top-to-bottom these are successive subtractions: raw apparent ~4 mrad →
 remove the offset → **2.24 mrad** field-proportional → remove cross-talk (size
-unknown) → the survey's **~0.17 mrad**. So the honest statement is:
+unknown) → the survey's **sub-mrad** mechanical yaw (+0.85 mrad, toward the
+west — the opposite direction). So the honest statement is:
 
 > **The measured field shows a ~4 mrad apparent transverse tilt at full
 > excitation, of which only ~2.2 mrad scales as a rotation and the rest is a
 > current-independent ~1.4 mT offset (most likely a probe pedestal). Whether even
 > the 2.2 mrad is a real magnet yaw or further measurement systematic cannot be
-> decided from the maps; the cryostat survey (~0.17 mrad) is the external check.**
+> decided from the maps; the cryostat survey (sub-mrad, opposite sign in 2022) is
+> the external check.**
 
 **On the errors.** The per-method dispersion errors quoted above (±0.08–0.46 mrad)
 measure only how reproducibly each estimator pins the angle *on one map*; they are
@@ -547,7 +547,8 @@ z ≈ −240 mm — and must be replaced).
 > - **a transverse tilt** — a ~4 mrad apparent yaw at full field, which the
 >   [half-field cross-check](#half-field-cross-check-a-second-excitation) resolves
 >   into a **~2.2 mrad field-proportional** part plus a **current-independent
->   ~1.4 mT offset** (most likely a probe pedestal); the survey says ~0.17 mrad. The
+>   ~1.4 mT offset** (most likely a probe pedestal); the 2022 survey says the magnet
+>   is aligned to sub-mrad (+0.85 mrad, the opposite direction). The
 >   delivered maps therefore span a **yaw menu (0 / 2.2 / 4.4 mrad)** rather than a
 >   single angle (see [Global synthesis](#global-synthesis)).
 

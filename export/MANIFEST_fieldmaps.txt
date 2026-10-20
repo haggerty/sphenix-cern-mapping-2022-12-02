@@ -28,7 +28,8 @@ is NOT a single rigid rotation: a <B_perp> vs Bz fit decomposes it into
 
 The full-field apparent ~4.4 mrad is the sum of the two at full current.  Since
 the field map alone cannot break the magnet-yaw vs measurement-systematic
-degeneracy (only the cryostat survey can — it says ~0.17 mrad), we ship the
+degeneracy (only the cryostat survey can — the 2022-08-16 survey says sub-mrad,
++0.85 mrad toward the WEST, i.e. opposite in sign), we ship the
 range and let the tracking group choose:
 
    yaw = 0.0 mrad  no-tilt / scale-only — consistent with the survey and with
@@ -111,7 +112,8 @@ The yaw is applied as a rigid rotation.  The field map alone cannot say whether
 the field-proportional part is a real magnet yaw or a measurement-frame
 (probe/mapper/registration/cross-talk) systematic, and the half-field cross-check
 shows a current-independent ~1.4 mT term on top that is almost certainly
-instrumental.  The cryostat survey (which says ~0.17 mrad) is the external check
+instrumental.  The cryostat survey (2022-08-16: +0.85 mrad west, sub-mrad and
+opposite in sign to the field tilt) is the external check
 that would collapse the menu to one map.  Until then the yaw=0.0 (scale-only) and
 yaw=2.2 (field-proportional) maps bracket the defensible range; yaw=4.4 is kept
 only for continuity and is not recommended.

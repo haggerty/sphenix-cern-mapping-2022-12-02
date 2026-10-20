@@ -8,8 +8,8 @@
 // The amplitude is proportional to |z| and reverses sign at z=0,
 // distinguishing a tilt from a simple axis translation.
 //
-// For a 2.39 mrad survey tilt toward +y (phi0 ~ +90 deg):
-//   expected m=1 phase ~ +90 deg for z > 0 where dBz/dr < 0
+// Example: the apparent full-field tilt (~4.4 mrad toward -x, phi0 ~ 180 deg)
+//   gives an m=1 phase ~ 180 deg for z > 0 where dBz/dr < 0.
 //
 // CSV format (surveyor frame): x_s,y_s,z_s,|B|,Bx_s,By_s,Bz_s  [mm, T]
 // sPHENIX transform: xp=xs, yp=zs, zp=-ys; Bz_phx = -By_s

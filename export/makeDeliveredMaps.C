@@ -106,7 +106,8 @@ static void writeMap(const char* outFile, const char* title, F sample)
 //   case          yawMrad   meaning
 //   ------------  -------   ---------------------------------------------------
 //   no-tilt          0.0    amplitude scale only; consistent with the survey
-//                           (~0.17 mrad) and with the tilt being a measurement
+//                           (2022-08-16: +0.85 mrad west, sub-mrad and opposite
+//                           in sign) and with the tilt being a measurement
 //                           systematic.  Lower bound of the menu.
 //   field-prop      -2.20   the field-PROPORTIONAL yaw from the half-field
 //                           analysis (slope of <B_perp> vs Bz), with the
