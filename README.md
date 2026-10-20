@@ -151,7 +151,7 @@ and Br derived from ∇·B = 0.
 | Peak on-axis Bz              | 1.3975 T |
 | Magnetic centre (Br zero crossing) | **z ≈ +26 mm** |
 | ∇·B residual (RMS / \|max\|) | 2.7 × 10⁻⁶ / 2.0 × 10⁻⁵ T/mm |
-| Solenoid tilt \|θ\|          | ≈ 4.0–4.7 mrad toward −x (azimuth ≈ 176°) **apparent at full field** — the [half-field cross-check](#half-field-cross-check-a-second-excitation) splits this into ~2.2 mrad field-proportional + a ~1.4 mT current-independent offset (2022 survey: sub-mrad, opposite sign); see [tilt cross-checks](#cross-checks-three-independent-tilt-estimators) and [Global synthesis](#global-synthesis) |
+| Solenoid tilt \|θ\|          | ≈ 4.0–4.7 mrad toward −x (azimuth ≈ 176°) **apparent at full field** — the [half-field cross-check](#half-field-cross-check-a-second-excitation) splits this into ~2.2 mrad field-proportional + a ~1.4 mT current-independent offset (cryostat survey: +1.4 mrad toward the west, opposite sign); see [Cryostat survey](#cryostat-survey), [tilt cross-checks](#cross-checks-three-independent-tilt-estimators) and [Global synthesis](#global-synthesis) |
 
 ### Comparison with OPERA
 
@@ -235,14 +235,15 @@ Cartesian grid) gives the OPERA tilt.
 | **Measured (2022-12-02)** | **4.13 mrad** (θx −4.12, θy +0.29) | azimuth ≈ 176° (toward −x) | ⟨Bx⟩ ≈ −5.8 mT |
 | **OPERA** (official `sphenix3dmapxyz.root`) | **≈ 0.02–0.05 mrad** | (chimney only) | ⟨Bx⟩,⟨By⟩ < 0.07 mT |
 
-**The measured solenoid carries a real ~4 mrad axis tilt; OPERA does not.** OPERA
+**The measured field carries a ~4 mrad apparent axis tilt; OPERA does not.** OPERA
 is an idealized calculation, axisymmetric apart from the chimney, so its residual
 transverse field is two orders of magnitude smaller (and is just the chimney
-breaking azimuthal symmetry). The measured tilt is a physical misalignment of the
-magnet axis relative to the surveyor frame and **should be cross-checked against
-the survey before being quoted** as a hardware number.
+breaking azimuthal symmetry). The [cryostat survey](#cryostat-survey) shows that
+the measured tilt is **not** the orientation of the magnet: the surveyed axis
+points ~1.4 mrad the other way.
 
-**Physical picture.** With the sPHENIX site convention (+z = north, +x = west,
+**Physical picture** (of the apparent field tilt, not of the magnet — see
+[Cryostat survey](#cryostat-survey)). With the sPHENIX site convention (+z = north, +x = west,
 y = up, so −x = east), θy ≈ 0 means the magnet is **level** (no pitch/roll); the
 tilt is a pure horizontal yaw of ~4 mrad about the vertical axis, swinging the
 **north end toward the east** (south end toward the west). The field follows the
@@ -345,10 +346,10 @@ The realistic uncertainty hierarchy is:
 
 So the honest statement is: **measured field-to-frame angle ≈ 4.4 mrad (stat. ~0.1
 mrad), with a systematic uncertainty of order the value itself — consistent with
-the magnet being aligned to the survey's ~0.2 mrad.** The map establishes that a
+the magnet being aligned to ~1 mrad as the survey finds.** The map establishes that a
 ~4 mrad rotation exists between field and nominal frame; it cannot by itself say
 whether that rotation is the magnet, the probe, or the registration. The survey is
-the decisive external check. (Of the three statistical errors, M1's ±0.46 is the
+the decisive external check (see [Cryostat survey](#cryostat-survey)). (Of the three statistical errors, M1's ±0.46 is the
 most trustworthy — ring-to-ring is genuinely semi-independent; M2's ±0.08 is
 optimistic even statistically, since the p(z) residuals carry unmodelled
 structure.) See `plots/tilt_estimates.{pdf,png}`.
@@ -382,11 +383,10 @@ reproduces it exactly.
 
 **What points toward a measurement systematic rather than a hardware yaw:**
 
-- **The 2022-08-16 survey says the magnet is aligned to sub-mrad** — yaw
-  θx = +0.85 mrad (north end *west*), pitch θy = +0.17 mrad (north end up) — i.e.
-  ~5× smaller than the apparent field tilt and of the **opposite sign**. (It predates
-  the mapping by ~3.5 months, so it constrains the as-installed pose, not provably
-  the as-mapped one.)
+- **The cryostat surveys say the magnet is aligned to ~1 mrad** — the 2026
+  cylinder fit gives θx = +1.42 mrad (north end *west*) and θy = +0.69 mrad (north
+  end up), consistent with the 2022 surveys — smaller than the apparent field tilt
+  and of the **opposite sign** (see [Cryostat survey](#cryostat-survey)).
 - **It is purely horizontal** (θy ≈ 0). Gravity-driven effects (cryostat/coil sag)
   would appear as a *vertical* pitch, not a horizontal yaw; a horizontal-only
   rotation is more naturally an installation/registration error about the vertical
@@ -396,8 +396,8 @@ reproduces it exactly.
 
 **Diagnostics that could actually disentangle it:**
 
-- **The pending cryostat survey** — the only external handle that breaks the
-  degeneracy. Decisive.
+- **The cryostat survey** — the only external handle that breaks the
+  degeneracy. Now done: see [Cryostat survey](#cryostat-survey).
 - **Current dependence** — if maps at different excitations exist: does ⟨B⊥⟩ scale
   linearly through zero with Bz (→ rotation / cross-talk / deflection) or carry a
   current-independent offset (→ external field)?
@@ -470,6 +470,59 @@ is what would settle it. **What it does not do:** the 2.24 mrad slope still mixe
 real magnet/frame rotation with any ∝Bz probe cross-talk, so even that residual is
 an upper bound on a physical yaw.
 
+### Cryostat survey
+
+The cryostat has been surveyed three times. The axis is quoted here as the slopes
+of the solenoid axis, **θx = dx/dz** (+ = north end toward the west) and
+**θy = dy/dz** (+ = north end up), in mrad. These compare directly with the
+field-derived slopes ⟨Bx⟩/Bz and ⟨By⟩/Bz. Survey coordinates (x = west, y = south,
+z = up) map to sPHENIX by the same transform as the field-map CSVs:
+`x_phx = x_s`, `y_phx = z_s`, `z_phx = −y_s`.
+
+| survey | working frame | θx [mrad] | θy [mrad] | centre (x, y, z) [mm] |
+|--------|---------------|----------:|----------:|-----------------------|
+| **2026-10-07**, cryostat cylinder fit | RHIC CONTROL::Local_08 | **+1.42** | **+0.69** | (+3.1, +0.9, −2.9) |
+| 2026-10-07, end-circle centres | RHIC CONTROL::Local_08 | +1.41 | +0.61 | (+3.1, +0.9, −3.4) |
+| 2026-10-07, end-plane normals (S / N) | RHIC CONTROL::Local_08 | +1.27 / +1.00 | +0.41 / +0.34 | — |
+| 2022-08-16, magnet frame (rotation table) | RHIC CONTROL::Local_08 | +0.85 | +0.17 | (+2.0, +1.5, −4.5) |
+| 2022-08-12, magnet frame at roll-in | sPhenix Assembly Ref-2022 | +1.40 | −0.06 | — |
+| *field, current-proportional part (half-field fit)* | *mapping frame* | *−2.14 ± 0.05* | *−0.65 ± 0.07* | — |
+| *field, raw apparent (full-field M2 fit)* | *mapping frame* | *−4.40 ± 0.08* | *−0.16 ± 0.03* | *(+2.6, +1.2, —)* |
+
+The 2026 report gives fitted points rather than a rotation table: the two ends of
+the fitted cylinder (length 3846 mm, radius 1382.4 mm) and the centres of the two
+end circles. The axis direction is therefore read directly from coordinates, with
+no rotation-sign convention to interpret. The 2022-08-12 report includes the
+magnet frame's axis matrix, which checks the sign convention used to read the
+2022-08-16 rotation table: both give the north end toward the west. The end faces
+are square to the cylinder axis within ~0.4 mrad.
+
+**What the surveys establish:**
+
+- **The magnet's north end points west by ~1–1.4 mrad**, in every survey from 2022
+  to 2026 and by two different methods (fiducial frame vs. cylinder fit). The
+  field tilt points **east**. Even the current-proportional part of the field
+  tilt differs from the 2026 survey by **~3.6 mrad horizontally** and **~1.3 mrad
+  vertically**, with the opposite sign in both. The field tilt is therefore not
+  the orientation of the magnet; it is a rotation of the measurement relative to
+  the survey frame.
+- **The magnet has stayed put**: the 2026 cryostat centre is within ~1–2 mm of the
+  2022-08-16 magnet-frame position, so the 2026 pose is a fair proxy for the
+  as-mapped (2022-12-02) one.
+- **Vertical alignment:** the 2026 survey finds the north end ~0.6–0.7 mrad *up*;
+  the magnet is not exactly level.
+
+**Suggestive but unverified.** *If* the CERN mapping frame coincides with the RHIC
+local frame (not established), the field-derived transverse axis offset
+(x₀, y₀) = (+2.6, +1.2) mm matches the cryostat centre (+3.1, +0.9) mm, and the
+magnetic centre (z ≈ +26 mm) lies ~29 mm north of the cryostat centre (z ≈ −2.9 mm),
+close to the 28.5 mm design coil offset. Confirming the mapping frame's
+registration would turn this into a check of the map's absolute position.
+
+The survey reports are kept with the survey records
+(`survey_2026-10-15/CRYOSTAT LOCATION 10-7-26.pdf`, with the 2022 reports in its
+`LEGACY/` folder); they are not committed here.
+
 ### Global synthesis
 
 Combining the full-field estimators, the half-field decomposition and the survey,
@@ -479,19 +532,20 @@ the transverse-field "tilt" resolves into three layers of very different status:
 |-----------|------|--------|:---------:|
 | current-independent offset | ~1.4 mT (~1.0 mrad-equiv at full field) | probe pedestal, or remanent/ambient field | constant |
 | field-proportional yaw | 2.24 ± 0.05 mrad | rigid rotation **and/or** ∝Bz probe cross-talk | ∝ Bz |
-| real magnet yaw (2022-08-16 survey) | θx ≈ +0.85 mrad (west; opposite sign), θy ≈ +0.17 mrad | mechanical alignment | geometric |
+| real magnet orientation (2026 survey) | θx ≈ +1.42 mrad (west; opposite sign), θy ≈ +0.69 mrad | mechanical alignment | geometric |
 
 Read top-to-bottom these are successive subtractions: raw apparent ~4 mrad →
 remove the offset → **2.24 mrad** field-proportional → remove cross-talk (size
-unknown) → the survey's **sub-mrad** mechanical yaw (+0.85 mrad, toward the
-west — the opposite direction). So the honest statement is:
+unknown) → the surveyed magnet axis (**+1.42 mrad, toward the west** — the
+opposite direction). Since the last step changes sign, the "cross-talk" layer must
+be at least ~3.6 mrad: essentially all of the field tilt is measurement systematic.
+So the honest statement is:
 
-> **The measured field shows a ~4 mrad apparent transverse tilt at full
-> excitation, of which only ~2.2 mrad scales as a rotation and the rest is a
-> current-independent ~1.4 mT offset (most likely a probe pedestal). Whether even
-> the 2.2 mrad is a real magnet yaw or further measurement systematic cannot be
-> decided from the maps; the cryostat survey (sub-mrad, opposite sign in 2022) is
-> the external check.**
+> **The measured field shows a ~4 mrad apparent transverse tilt toward the east at
+> full excitation, of which ~2.2 mrad scales as a rotation and the rest is a
+> current-independent ~1.4 mT offset (most likely a probe pedestal). The cryostat
+> survey puts the magnet axis ~1.4 mrad toward the west — the opposite direction —
+> so the field tilt is a rotation of the measurement, not of the magnet.**
 
 **On the errors.** The per-method dispersion errors quoted above (±0.08–0.46 mrad)
 measure only how reproducibly each estimator pins the angle *on one map*; they are
@@ -507,13 +561,14 @@ number, the delivery is a **menu over the yaw**, all sharing the +0.9 % amplitud
 
 | yaw | rationale |
 |----:|-----------|
-| **0.0 mrad** | no-tilt / scale-only — consistent with the survey and with the apparent tilt being a measurement systematic |
-| **2.2 mrad** | field-proportional yaw, pedestal removed — best single estimate **if** a real rotation is assumed (an upper bound) |
-| **4.4 mrad** | raw apparent yaw — **disfavoured**; ~1 mrad of it is the additive offset, and the remainder still exceeds the survey |
+| **0.0 mrad** | no-tilt / scale-only — the closest of the three to the survey (+1.4 mrad west); treats the apparent tilt as a measurement systematic |
+| **2.2 mrad** | field-proportional yaw, pedestal removed — **disfavoured by the survey** (opposite direction to the surveyed axis) |
+| **4.4 mrad** | raw apparent yaw — **disfavoured**; ~1 mrad of it is the additive offset, and all of it points opposite to the survey |
 
-The **0.0 and 2.2 mrad maps bracket the defensible range**; 4.4 mrad is retained
-only for continuity with the earlier single-yaw delivery. A survey would collapse
-the menu to one.
+Before the survey, the **0.0 and 2.2 mrad maps bracketed the defensible range**.
+The [cryostat survey](#cryostat-survey) now points the other way from both eastward
+yaws, which leaves the **0.0 mrad** (scale-only) map as the best of the three; 4.4
+mrad is retained only for continuity with the earlier single-yaw delivery.
 
 ### Maps for reconstruction
 
@@ -547,8 +602,9 @@ z ≈ −240 mm — and must be replaced).
 > - **a transverse tilt** — a ~4 mrad apparent yaw at full field, which the
 >   [half-field cross-check](#half-field-cross-check-a-second-excitation) resolves
 >   into a **~2.2 mrad field-proportional** part plus a **current-independent
->   ~1.4 mT offset** (most likely a probe pedestal); the 2022 survey says the magnet
->   is aligned to sub-mrad (+0.85 mrad, the opposite direction). The
+>   ~1.4 mT offset** (most likely a probe pedestal). The
+>   [cryostat survey](#cryostat-survey) puts the magnet axis ~1.4 mrad toward the
+>   west — the opposite direction — so the field tilt is a measurement effect. The
 >   delivered maps therefore span a **yaw menu (0 / 2.2 / 4.4 mrad)** rather than a
 >   single angle (see [Global synthesis](#global-synthesis)).
 
@@ -585,13 +641,14 @@ vs. zero).
 
 | yaw | file suffix | rationale |
 |----:|-------------|-----------|
-| 0.0 mrad | `_yaw0.0mrad` | no-tilt / scale-only — the bare amplitude match; consistent with the survey |
-| 2.2 mrad | `_yaw2.2mrad` | field-proportional yaw, pedestal removed — best single estimate **if** a real rotation is assumed |
+| 0.0 mrad | `_yaw0.0mrad` | no-tilt / scale-only — the bare amplitude match; closest to the survey |
+| 2.2 mrad | `_yaw2.2mrad` | field-proportional yaw, pedestal removed — disfavoured by the survey (opposite direction) |
 | 4.4 mrad | `_yaw4.4mrad` | raw apparent yaw — **disfavoured** (~1 mrad is the additive offset); kept for continuity |
 
-Which to register for production is a tracking-group decision. The **0.0 and
-2.2 mrad maps bracket the defensible range**; 4.4 mrad is retained only for
-continuity with the earlier single-yaw delivery.
+Which to register for production is a tracking-group decision. The
+[cryostat survey](#cryostat-survey) favours the **0.0 mrad** map: both eastward
+yaws point opposite to the surveyed axis. 4.4 mrad is retained only for continuity
+with the earlier single-yaw delivery.
 
 Notes:
 
@@ -601,9 +658,9 @@ Notes:
 - The **measured map deliberately omits nothing it measured but keeps no noise**:
   it is the measurement smoothed, *with* its yaw. It is **not** the raw point cloud
   (whose ~10 mT transverse scatter is measurement noise, not field).
-- The yaw is applied as a rigid rotation; rebuilding any case is one command. A
-  magnet-off/zero-field probe reading or the cryostat survey would collapse the
-  menu to one map (see [Global synthesis](#global-synthesis)).
+- The yaw is applied as a rigid rotation; rebuilding any case is one command. The
+  [cryostat survey](#cryostat-survey) favours the 0.0 mrad map over both eastward
+  yaws (see [Global synthesis](#global-synthesis)).
 
 This supersedes the earlier single-yaw delivery and the axisymmetric
 `sphenix_measured_fieldmap_cartesian.root` (no tilt, cut off at r = 90 cm); both are
